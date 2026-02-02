@@ -1,6 +1,8 @@
+use bevy::ecs::system::command;
 //炮台
 use bevy::{prelude::*, time, window::PrimaryWindow};
 use crate::config::*;
+use crate::event::*;
 
 
 #[derive(Component, Resource)]
@@ -55,11 +57,13 @@ fn cannon_move_system(
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
     mut cannon_time: ResMut<CannonTimer>,
-    mut query: Query<(Entity, &mut Transform, &mut Cannon)>
+    mut query: Query<(Entity, &mut Transform, &mut Cannon)>,
+    mut commands: Commands
 ){
     cannon_time.0.tick(time.delta());
 
     if input.just_pressed(KeyCode::Space) && cannon_time.0.just_finished(){
-        println!("发射炮弹");
+        let (_, transform, _) = query.single_mut().unwrap();
+        commands.trigger(FireEvent(transform.translation));
     }
 }

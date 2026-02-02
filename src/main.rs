@@ -1,16 +1,20 @@
 use bevy::prelude::*;
 use crate::bevy_boids::*;
 use crate::cannon::*;
+use crate::bullet::*;
 
 mod bevy_boids;
 mod config;
 mod cannon;
+mod event;
+mod bullet;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(CannonPlugin)
         .add_plugins(BoidsPlugin)
+        .add_plugins(BulletPlugin)
         .add_systems(Startup, setup)
         .run();
 }

@@ -1,3 +1,4 @@
+//飞行物体
 use bevy::{prelude::*, window::PrimaryWindow};
 use rand::Rng;
 use crate::config::*;
