@@ -1,13 +1,16 @@
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use crate::bevy_boids::*;
 use crate::cannon::*;
 use crate::bullet::*;
+use crate::config::*;
 
 mod bevy_boids;
 mod config;
 mod cannon;
 mod event;
 mod bullet;
+
 
 fn main() {
     App::new()
@@ -19,6 +22,19 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands) {
+fn setup(
+    mut commands: Commands,
+    window: Single<&Window, With<PrimaryWindow>>,
+) {
     commands.spawn(Camera2d);
+
+    //获取窗口宽高
+    let width = window.width();
+    let height = window.height();
+    commands.insert_resource(
+        GameConfig{
+            window_width: width,
+            window_height: height,
+        }
+    );
 }
