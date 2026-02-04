@@ -23,7 +23,7 @@ pub const CANNON_SPEED: f32 = 300.0;
 
 //子弹
 pub const BULLET_SIZE: f32 = 2.0;
-pub const BULLET_SPEED: f32 = 300.0;
+pub const BULLET_SPEED: f32 = 900.0;
 #[derive(Resource)]
 pub struct BulletTimer(pub Timer);
 

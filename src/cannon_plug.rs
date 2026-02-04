@@ -59,11 +59,9 @@ fn cannon_move_system(
     bullet_timer.0.tick(time.delta());
 
     if input.just_pressed(KeyCode::Space)  {
-        print!("just_pressed\n");
         if bullet_timer.0.is_finished() {//子弹发射间隔
             let (_, transform, _) = query.single_mut().unwrap();
             commands.trigger(FireEvent(transform.translation));
-            print!("bullet_timer is finished\n");
             bullet_timer.0.reset();
         }
     }
