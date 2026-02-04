@@ -1,5 +1,5 @@
 //飞行物体
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{prelude::*};
 use rand::Rng;
 use crate::config::*;
 
@@ -44,21 +44,17 @@ pub struct Boid {
     pub wander_angle: f32, //想去别的地方"冲动", 连续、可积累
 }
 
-#[derive(Resource)]
-pub struct BoidsImage(Handle<Image>);
-
 impl Boid {
     pub fn new(images: BoidsImage) -> (Boid, Sprite, Transform) {
         let mut rng = rand::rng();
         let min= -1.0 * 150.0;
         let max = 1.0 * 150.0;
-        let location_new = rng.random_range(-10.0 .. 10.0);
+        let location_new = rng.random_range(-20.0 .. 20.0);
         (
             Boid {
                 velocity: Vec3::new(rng.random_range(min..max), rng.random_range(min..max), 0.0),
-                wander_angle: rng.random_range(0.0..std::f32::consts::TAU),
+                wander_angle: rng.random_range(0.0 .. std::f32::consts::TAU),
             },
-            //Sprite::from_color(FLY_COLOR, Vec2::ONE),
             Sprite {
                 image: images.0.clone(),
                 color: Color::srgba(1.0, 1.0, 1.0, 0.5),
@@ -66,7 +62,7 @@ impl Boid {
             },
             Transform {
                 translation: Vec3::new(location_new, location_new, 0.0),
-                scale: Vec3::new(FLY_SIZE, FLY_SIZE, FLY_SIZE) ,
+                scale: Vec3::new(FLY_SIZE, FLY_SIZE, 0.0) ,
                 ..default()
             },
         )
@@ -86,15 +82,13 @@ impl Plugin for BoidsPlugin {
 
 fn setup(
          mut config: ResMut<BoidConfig>,
-         window: Single<&Window, With<PrimaryWindow>>,
+         game_config: Res<GameConfig>,
          asset_server: Res<AssetServer>,
          mut commands: Commands,
 ) {
-    let window_width = window.width();
-    let window_height = window.height();
 
-    config.limit_x = window_width / 2.0;
-    config.limit_y = window_height / 2.0;
+    config.limit_x = game_config.window_width / 2.0;
+    config.limit_y = game_config.window_height / 2.0;
 
     //加载图片
     let image_handel = asset_server.load("images/boid 200_200.png");
