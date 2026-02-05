@@ -58,15 +58,14 @@ fn cannon_move_system(
 ){
     bullet_timer.0.tick(time.delta());
 
+    let (_, mut cannon_transform, _) = query.single_mut().unwrap();
+
     if input.just_pressed(KeyCode::Space)  {
         if bullet_timer.0.is_finished() {//子弹发射间隔
-            let (_, transform, _) = query.single_mut().unwrap();
-            commands.trigger(FireEvent(transform.translation));
+            commands.trigger(FireEvent(cannon_transform.translation));
             bullet_timer.0.reset();
         }
     }
-
-    let (_, mut cannon_transform, _) = query.single_mut().unwrap();
 
     let mut keys = [KeyCode::ArrowLeft, KeyCode::KeyA];
     if keys.iter().any(|&key| input.pressed(key)) {
