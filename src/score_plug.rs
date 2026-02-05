@@ -1,5 +1,6 @@
 //计分面板
 
+use bevy::color::palettes::css::{BLUE, YELLOW};
 use bevy::{prelude::*};
 use crate::event::*;
 use crate::config::*;
@@ -26,31 +27,53 @@ fn setup(
      global_font: Res<GlobalFont>,
 ) {
     commands.spawn((
-        ScoreType,
-        Text::new("得分: "),
-        TextFont {
-            font: global_font.0.clone(),
-            font_size: SCORE_TEXT_FONT_SIZE,
-            ..default()
-        },
-        TextColor(SCORE_TEXT_COLOR),
+        // ScoreType,
+        // TextColor(SCORE_TEXT_COLOR),
         Node {
-            position_type: PositionType::Absolute,
-            top: Val::Px(0.0),
-            left: Val::Px(0.0),
+            width: percent(15),
+            height: percent(10),
+            border: UiRect::all(Val::Px(2.0)),
+            display: Display::Flex,
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Start,
+            padding: MARGIN.all(),
             ..default()
         },
+        //BackgroundColor(BLUE.into()),
     ))
-    .with_child((
-        ScoreSpanType,
-        TextSpan::new("0"),
-        TextFont {
-            font: global_font.0.clone(),
-            font_size: SCORE_TEXT_FONT_SIZE,
-            ..default()
-        },
-        TextColor(SCORE_TEXT_COLOR),
-    ));
+    .with_children(|builder| {
+        builder.spawn((
+            Node {
+                display: Display::Flex,
+                flex_direction: FlexDirection::Row,
+                width: percent(100),
+                ..default()
+            },
+            //BackgroundColor(YELLOW.into()),
+        ))
+        .with_children(|builder|{
+            builder.spawn((
+                ScoreType,
+                Text::new("得分: "),
+                TextFont {
+                    font: global_font.0.clone(),
+                    font_size: SCORE_TEXT_FONT_SIZE,
+                    ..default()
+                },
+                TextColor(SCORE_TEXT_COLOR),
+            ))
+            .with_child((
+                ScoreSpanType,
+                TextSpan::new("0"),
+                TextFont {
+                    font: global_font.0.clone(),
+                    font_size: SCORE_TEXT_FONT_SIZE,
+                    ..default()
+                },
+                TextColor(SCORE_TEXT_COLOR),
+            ));
+        });
+    });
 }
 
 fn score_update_system(

@@ -1,6 +1,6 @@
 //use bevy::color::Color;
 
-use bevy::{asset::Handle, audio::AudioSource, color::Color, ecs::resource::Resource, image::Image, text::Font, time::Timer};
+use bevy::{asset::Handle, audio::AudioSource, color::Color, ecs::resource::Resource, image::Image, text::Font, time::Timer, ui::Val};
 
 //game config
 #[derive(Resource)]
@@ -47,3 +47,6 @@ pub const SCORE_TEXT_COLOR: Color = Color::srgb(0.5, 0.5, 1.0);
 pub const FPS_TEXT_FONT_SIZE: f32 = 10.0;
 pub const FPS_TEXT_COLOR: Color = Color::srgb(1.0, 1.0, 1.0);
 pub const FPS_TIME_DURATION: std::time::Duration = std::time::Duration::from_millis(1000);
+
+//布局
+pub const MARGIN: Val = Val::Px(6.);
