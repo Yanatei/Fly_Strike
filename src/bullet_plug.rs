@@ -58,7 +58,7 @@ fn on_fired(
         },
         Transform {
             scale: Vec3::new(1.0, 1.0, 1.0),
-            translation: Vec3::new(trigger_pos.x, trigger_pos.y+CANNON_HEIGHT, 0.0),
+            translation: Vec3::new(trigger_pos.x, trigger_pos.y + CANNON_HEIGHT as f32/2.0, 0.0),
             ..default()
         },
     ));

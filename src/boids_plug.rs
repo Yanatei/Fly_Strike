@@ -91,7 +91,7 @@ fn setup(
     config.limit_y = game_config.window_height / 2.0;
 
     //加载图片
-    let image_handel = asset_server.load("images/boid 200_200.png");
+    let image_handel = asset_server.load("images/paopao.png");
     commands.insert_resource(BoidsImage(image_handel.clone()));
 
     // 生成苍蝇/鸟群

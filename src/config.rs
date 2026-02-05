@@ -22,7 +22,9 @@ pub const FLY_SIZE: f32 = 0.2;
 //pub const FLY_COLOR: Color = Color::srgb(0.0, 0.7, 0.0);
 
 //炮台
-pub const CANNON_HEIGHT: f32 = 0.0;
+pub const CANNON_SIZE: f32 = 0.4;
+pub const CANNON_IMAGE_HEIGHT: u32 = 200; //炮台原始图片高度 px
+pub const CANNON_HEIGHT: f32 = CANNON_IMAGE_HEIGHT as f32 * CANNON_SIZE; //炮台高度 px
 pub const BULLET_TIME_DURATION: std::time::Duration = std::time::Duration::from_millis(1000); //子弹发射间隔时间t
 pub const CANNON_SPEED: f32 = 300.0;
 
