@@ -7,6 +7,11 @@ use bevy::{asset::Handle, audio::AudioSource, color::Color, ecs::resource::Resou
 pub struct GameConfig {
     pub window_width: f32,
     pub window_height: f32,
+
+    //计时,单位秒
+    pub elapsed_time: [f32; 3],
+    //第几关
+    pub game_level: usize,
 }
 
 //飞行物体
@@ -34,6 +39,7 @@ pub struct GlobalFont(pub Handle<Font>);
 //计分
 #[derive(Resource)]
 pub struct Score(pub u32);
+pub const DURATION_SPAN_DURATION: std::time::Duration = std::time::Duration::from_millis(100);
 
 //音效
 #[derive(Resource)]
@@ -48,5 +54,6 @@ pub const FPS_TEXT_FONT_SIZE: f32 = 10.0;
 pub const FPS_TEXT_COLOR: Color = Color::srgb(1.0, 1.0, 1.0);
 pub const FPS_TIME_DURATION: std::time::Duration = std::time::Duration::from_millis(1000);
 
-//布局
-pub const MARGIN: Val = Val::Px(6.);
+//UI布局
+pub const MARGIN: Val = Val::Px(3.);
+

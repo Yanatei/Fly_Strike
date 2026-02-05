@@ -26,6 +26,7 @@ fn main() {
         .add_plugins(FpsPlugin)
         .add_systems(PreStartup, pre_startup)
         .add_systems(Startup, setup)
+        .add_systems(Update, update_system)
         .run();
 }
 
@@ -44,6 +45,8 @@ fn pre_startup(
         GameConfig{
             window_width: width,
             window_height: height,
+            elapsed_time: [0.0; 3],
+            game_level: 0,
         }
     );
     
@@ -57,6 +60,16 @@ fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
+}
+
+fn update_system(
+    time: Res<Time>,
+    mut config: ResMut<GameConfig>,
+) {
+    //累计时间
+    let game_level = config.game_level + 1;
+    config.elapsed_time[game_level] += time.delta_secs();
+    
 }
 
 fn load_font(commands: &mut Commands, asset_server: &Res<AssetServer>) {
