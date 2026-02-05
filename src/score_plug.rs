@@ -4,6 +4,7 @@ use bevy::color::palettes::css::{BLUE, YELLOW};
 use bevy::{prelude::*};
 use crate::event::*;
 use crate::config::*;
+use crate::game_state::GameState;
 
 #[derive(Component)]
 pub struct ScoreType;
@@ -24,7 +25,7 @@ impl Plugin for ScorelPlugin {
         app.insert_resource(Score(0));
         app.insert_resource(DurationSpanTimer(Timer::new(DURATION_SPAN_DURATION, TimerMode::Repeating)));
         app.add_systems(Startup, setup);
-        app.add_systems(Update, (score_update_system, elapsed_time_update_system));
+        app.add_systems(Update, (score_update_system, elapsed_time_update_system).run_if(in_state(GameState::InGame)));
         app.add_observer(on_scored);//添加观察者，得分时触发
     }
 }

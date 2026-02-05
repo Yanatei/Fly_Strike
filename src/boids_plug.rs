@@ -1,7 +1,7 @@
 //飞行物体
 use bevy::{prelude::*};
 use rand::Rng;
-use crate::config::*;
+use crate::{config::*, game_state::GameState};
 
 // Boid 控制参数
 #[derive(Resource)]
@@ -49,7 +49,7 @@ impl Boid {
         let mut rng = rand::rng();
         let min= -1.0 * 150.0;
         let max = 1.0 * 150.0;
-        let location_new = rng.random_range(-20.0 .. 20.0);
+        let location_new = rng.random_range(-50.0 .. 50.0);
         (
             Boid {
                 velocity: Vec3::new(rng.random_range(min..max), rng.random_range(min..max), 0.0),
@@ -75,7 +75,7 @@ impl Plugin for BoidsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(BoidConfig::default());
         app.add_systems(Startup, setup);
-        app.add_systems(Update, boid_system);
+        app.add_systems(Update, boid_system.run_if(in_state(GameState::InGame)));
     }
 }
 
