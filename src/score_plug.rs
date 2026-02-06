@@ -12,6 +12,9 @@ pub struct ScoreType;
 pub struct ScoreSpanType;
 
 #[derive(Component)]
+pub struct GameLevelSpanType;
+
+#[derive(Component)]
 pub struct DurationSpanType;
 
 #[derive(Resource)]
@@ -48,6 +51,7 @@ fn setup(
         //BackgroundColor(BLUE.into()),
     ))
     .with_children(|builder| {
+        //第一行，关卡行
         builder.spawn((
             Node {
                 display: Display::Flex,
@@ -60,6 +64,42 @@ fn setup(
             //BackgroundColor(YELLOW.into()),
         ))
         .with_children(|builder|{
+            //关卡
+            builder.spawn((
+                Text::new("关卡: "),
+                TextFont {
+                    font: global_font.0.clone(),
+                    font_size: SCORE_TEXT_FONT_SIZE,
+                    ..default()
+                },
+                TextColor(SCORE_TEXT_COLOR),
+            ))
+            .with_child((
+                GameLevelSpanType,
+                TextSpan::new("1"),
+                TextFont {
+                    font: global_font.0.clone(),
+                    font_size: SCORE_TEXT_FONT_SIZE,
+                    ..default()
+                },
+                TextColor(SCORE_TEXT_COLOR),
+            ));
+        });
+
+        //第二行，得分行
+        builder.spawn((
+            Node {
+                display: Display::Flex,
+                flex_direction: FlexDirection::Row,
+                width: percent(100),
+                //padding: MARGIN.all(),
+                margin: MARGIN.all(),
+                ..default()
+            },
+            //BackgroundColor(YELLOW.into()),
+        ))
+        .with_children(|builder|{
+            //得分
             builder.spawn((
                 ScoreType,
                 Text::new("得分: "),
@@ -72,7 +112,7 @@ fn setup(
             ))
             .with_child((
                 ScoreSpanType,
-                TextSpan::new("0"),
+                TextSpan::new("1"),
                 TextFont {
                     font: global_font.0.clone(),
                     font_size: SCORE_TEXT_FONT_SIZE,
@@ -82,7 +122,7 @@ fn setup(
             ));
         });
 
-        //下一行
+        //第三行，耗时行
         builder.spawn((
             Node {
                 display: Display::Flex,
@@ -144,7 +184,7 @@ fn elapsed_time_update_system(
     duration_timer.0.tick(time.delta());
     if duration_timer.0.is_finished() {
         let duration_span = duration_span_query.into_inner();
-        let elapsed = config.elapsed_time[config.game_level + 1];
+        let elapsed = config.elapsed_time[config.game_level];
         **(duration_span.into_inner()) = format!("{:.2}", elapsed);
     }
 }

@@ -47,9 +47,9 @@ pub enum GameState {
 //飞行物体
 #[derive(Resource)]
 pub struct BoidsImage(pub Handle<Image>);
-pub const FLY_COUNT: usize = 30;
+pub const FLY_COUNT: usize = 3;
 pub const FLY_SIZE: f32 = 0.2;
-//pub const FLY_COLOR: Color = Color::srgb(0.0, 0.7, 0.0);
+pub const BOID_SPEED_INCREMENT: f32 = 30.0;
 
 //炮台
 pub const CANNON_SIZE: f32 = 0.4;
@@ -79,7 +79,7 @@ pub const DURATION_SPAN_DURATION: std::time::Duration = std::time::Duration::fro
 pub struct ScoreSound(pub Handle<AudioSource>);
 
 //计分面板
-pub const SCORE_TEXT_FONT_SIZE: f32 = 25.0;
+pub const SCORE_TEXT_FONT_SIZE: f32 = 19.0;
 pub const SCORE_TEXT_COLOR: Color = Color::srgb(0.5, 0.5, 1.0);
 
 //FPS

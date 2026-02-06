@@ -2,6 +2,7 @@
 use bevy::{prelude::*};
 use rand::Rng;
 use crate::{config::*};
+use crate::event::*;
 
 // Boid 控制参数
 #[derive(Resource)]
@@ -45,7 +46,7 @@ pub struct Boid {
 }
 
 impl Boid {
-    pub fn new(images: BoidsImage) -> (Boid, Sprite, Transform) {
+    pub fn new(images_handle: Handle<Image>) -> (Boid, Sprite, Transform) {
         let mut rng = rand::rng();
         let min= -1.0 * 150.0;
         let max = 1.0 * 150.0;
@@ -56,7 +57,7 @@ impl Boid {
                 wander_angle: rng.random_range(0.0 .. std::f32::consts::TAU),
             },
             Sprite {
-                image: images.0.clone(),
+                image: images_handle,
                 color: Color::srgba(1.0, 1.0, 1.0, 0.5),
                 ..default()
             },
@@ -76,6 +77,7 @@ impl Plugin for BoidsPlugin {
         app.insert_resource(BoidConfig::default());
         app.add_systems(Startup, setup);
         app.add_systems(Update, boid_system.run_if(in_state(GameState::InGame)));
+        app.add_observer(on_NextLevelBoidsEvent);
     }
 }
 
@@ -96,122 +98,23 @@ fn setup(
 
     // 生成苍蝇/鸟群
     for _ in 0 .. FLY_COUNT {
-        commands.spawn(Boid::new(BoidsImage(image_handel.clone())));
+        commands.spawn(Boid::new(image_handel.clone()));
     }
 }
 
-// pub fn boid_system(
-//     time: Res<Time>,
-//     config: Res<BoidConfig>,
-//     mut query: Query<(Entity, &mut Transform, &mut Boid)>
-// ) {
-//     // === 快照当前帧数据 ===
-//     let boid_data: Vec<(Entity, Vec3, Vec3)> = query
-//         .iter()
-//         .map(|(e, t, b)| (e, t.translation, b.velocity))
-//         .collect();
-
-//     let mut rng = rand::rng();
-
-//     for (entity, mut transform, mut boid) in query.iter_mut() {
-//         let mut center = Vec3::ZERO;
-//         let mut avg_velocity = Vec3::ZERO;
-//         let mut separation = Vec3::ZERO;
-//         let mut neighbors = 0;
-
-//         // === 邻居分析 ===
-//         for (other_entity, other_pos, other_vel) in boid_data.iter() {
-//             if entity == *other_entity {
-//                 continue;
-//             }
-
-//             let diff = *other_pos - transform.translation;
-//             let dist = diff.truncate().length();
-
-//             if dist < config.vision && dist > 0.01 {
-//                 center += *other_pos;
-//                 avg_velocity += *other_vel;
-
-//                 separation += (transform.translation - *other_pos)
-//                     .normalize_or_zero()
-//                     / dist;
-
-//                 neighbors += 1;
-//             }
-//         }
-
-//         let mut force = Vec3::ZERO;
-
-//         if neighbors > 0 {
-//             let center = center / neighbors as f32;
-//             let avg_velocity = avg_velocity / neighbors as f32;
-
-//             // Cohesion：朝群中心
-//             force += (center - transform.translation)
-//                 .normalize_or_zero()
-//                 * config.cohesion;
-
-//             // Alignment：匹配平均速度（不过度锁死）
-//             force += (avg_velocity - boid.velocity) * config.alignment * 0.8;
-
-//             // Separation：强制避让
-//             force += separation.normalize_or_zero() * config.separation;
-//         }
-
-//         // === Wander：持续“想去别的地方” ===
-//         let wander_strength = 60.0;
-//         let wander_change = 0.8;
-
-//         boid.wander_angle +=
-//             rng.random_range(-wander_change..wander_change) * time.delta_secs();
-
-//         let wander_dir = Vec3::new(
-//             boid.wander_angle.cos(),
-//             boid.wander_angle.sin(),
-//             0.0,
-//         );
-
-//         force += wander_dir * wander_strength;
-
-//         // === 软边界（提前转向） ===
-//         let margin = 100.0;
-//         let pos = transform.translation;
-
-//         if pos.x > config.limit_x - margin {
-//             force.x -= (pos.x - (config.limit_x - margin)) * config.boundary_force * 0.01;
-//         } else if pos.x < -config.limit_x + margin {
-//             force.x += (-config.limit_x + margin - pos.x) * config.boundary_force * 0.01;
-//         }
-
-//         if pos.y > config.limit_y - margin {
-//             force.y -= (pos.y - (config.limit_y - margin)) * config.boundary_force * 0.01;
-//         } else if pos.y < -config.limit_y + margin {
-//             force.y += (-config.limit_y + margin - pos.y) * config.boundary_force * 0.01;
-//         }
-
-//         // === 更新速度 ===
-//         boid.velocity += force * time.delta_secs();
-//         boid.velocity.z = 0.0;
-
-//         // 限制最大速度
-//         boid.velocity = boid.velocity.clamp_length_max(config.speed);
-
-//         // 保持最低巡航速度（防止系统冷却）
-//         let min_speed = config.speed * 0.4;
-//         if boid.velocity.length() < min_speed {
-//             boid.velocity = boid.velocity.normalize_or_zero() * min_speed;
-//         }
-
-//         // === 应用位移 ===
-//         transform.translation += boid.velocity * time.delta_secs();
-
-//         // === 朝向飞行方向 ===
-//         if boid.velocity.length_squared() > 0.001 {
-//             let angle = boid.velocity.y.atan2(boid.velocity.x);
-//             transform.rotation = Quat::from_rotation_z(angle);
-//         }
-//     }
-// }
+//生成下一关的boids
+fn on_NextLevelBoidsEvent(
+    trigger: On<NextLevelBoidsEvent>,
+    mut commands: Commands,
+    boids_image_res: Res<BoidsImage>,
+    mut config: ResMut<BoidConfig>,
+) {
+    //增加速度,生成boids
+    config.speed += BOID_SPEED_INCREMENT;
+    for _ in 0 .. FLY_COUNT {
+        commands.spawn(Boid::new(boids_image_res.0.clone()));
+    }
+}
 
 pub fn boid_system(
     time: Res<Time>,
