@@ -54,7 +54,7 @@ fn setup(mut commands: Commands,
     let texture = asset_server.load("images/paotai.png");
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(CANNON_IMAGE_HEIGHT), 3, 1, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
-    let animation_config = AnimationConfig::new(0, 2, 10);
+    let animation_config = AnimationConfig::new(CANNON_PARAMETER.0, CANNON_PARAMETER.1, CANNON_PARAMETER.2);
 
     commands.spawn((
         Sprite {

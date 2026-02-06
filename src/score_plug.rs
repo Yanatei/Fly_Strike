@@ -4,7 +4,6 @@ use bevy::color::palettes::css::{BLUE, YELLOW};
 use bevy::{prelude::*};
 use crate::event::*;
 use crate::config::*;
-use crate::game_state::GameState;
 
 #[derive(Component)]
 pub struct ScoreType;

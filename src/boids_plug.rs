@@ -1,7 +1,7 @@
 //飞行物体
 use bevy::{prelude::*};
 use rand::Rng;
-use crate::{config::*, game_state::GameState};
+use crate::{config::*};
 
 // Boid 控制参数
 #[derive(Resource)]
