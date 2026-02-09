@@ -104,7 +104,7 @@ fn create_first_effect() -> EffectAsset {
         child_index: 1,
     };
 
-    let spawner = SpawnerSettings::rate((1.0, 3.0).into());
+    let spawner = SpawnerSettings::rate((1.0, 3.0).into()).with_starts_active(false);
 
     return EffectAsset::new(32, spawner, writer.finish())
         .with_name("FirstEffect")
@@ -155,7 +155,7 @@ fn create_second_effect() -> EffectAsset {
     let drag = writer.lit(4.).expr();
     let update_drag = LinearDragModifier::new(drag);
 
-    let spawner = SpawnerSettings::default();
+    let spawner = SpawnerSettings::default().with_starts_active(false);
 
     let mut color_gradient = bevy_hanabi::Gradient::new();
     color_gradient.add_key(0.0, Vec4::new(4.0, 4.0, 4.0, 1.0));
@@ -217,7 +217,7 @@ fn create_third_effect() -> EffectAsset {
 
     let orient = OrientModifier::new(OrientMode::AlongVelocity);
 
-    let spawner = SpawnerSettings::default();
+    let spawner = SpawnerSettings::default().with_starts_active(false);
 
     let mut color_gradient = bevy_hanabi::Gradient::new();
     color_gradient.add_key(0.0, Vec4::new(4.0, 4.0, 4.0, 1.0));
@@ -246,9 +246,14 @@ fn create_third_effect() -> EffectAsset {
 }
 
 fn on_level_complete(
-    mut commands: Commands
+    mut commands: Commands,
+    mut q_spawner: Query<&mut EffectSpawner>,
 ) {
     commands.insert_resource(LevelCompleteTimer(Timer::new(LEVEL_COMPLETE_DURATION, TimerMode::Once)));
+    //播放动画
+    for (mut spawner) in q_spawner.iter_mut() {
+        spawner.active = true;
+    }
 }
 
 fn in_level_complete_system(
@@ -256,9 +261,8 @@ fn in_level_complete_system(
     mut next_state: ResMut<NextState<GameState>>,
     mut level_timer: ResMut<LevelCompleteTimer>,
     mut commands: Commands,
+    mut q_spawner: Query<&mut EffectSpawner>,
 ) {
-    //播放动画
-
 
 
     //动画计时，到时间后加载下一关
