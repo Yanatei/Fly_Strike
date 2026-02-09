@@ -96,10 +96,10 @@ fn setup(
     let image_handel = asset_server.load("images/paopao.png");
     commands.insert_resource(BoidsImage(image_handel.clone()));
 
-    // 生成苍蝇/鸟群
-    for _ in 0 .. FLY_COUNT {
-        commands.spawn(Boid::new(image_handel.clone()));
-    }
+    // 生成苍蝇/鸟群, 改为由状态触发生成
+    // for _ in 0 .. FLY_COUNT {
+    //     commands.spawn(Boid::new(image_handel.clone()));
+    // }
 }
 
 //生成下一关的boids

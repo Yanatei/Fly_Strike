@@ -1,3 +1,4 @@
+use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use crate::boids_plug::*;
@@ -48,6 +49,12 @@ fn pre_startup(
     //音效
     let sound = asset_server.load("sounds/score.wav");
     commands.insert_resource(ScoreSound(sound.clone()));
+
+    let sound = asset_server.load("sounds/fireworks.wav");
+    commands.insert_resource(FireworksSound(sound.clone()));
+
+    let sound = asset_server.load("sounds/game_started.wav");
+    commands.insert_resource(GameStartedSound(sound.clone()));
 
 }
 

@@ -14,6 +14,9 @@ pub struct GameConfig {
     pub game_level: usize,
     //最大关数
     pub MAX_GAME_LEVEL: usize,
+
+    //游戏结束时的烟花计数器
+    pub fireworks_count: usize,
 }
 
 impl GameConfig {
@@ -24,6 +27,7 @@ impl GameConfig {
             elapsed_time: [0.0; 3],
             game_level: 0,
             MAX_GAME_LEVEL: 3,
+            fireworks_count: 0,
         }
     }
     pub fn width_window_size(mut self, width: f32, height: f32) -> Self {
@@ -37,9 +41,12 @@ impl GameConfig {
 pub enum GameState {
     Menu,   // 主菜单
     #[default]
+    BeforeInGame, // 准备开始游戏
     InGame,     // 游戏中
-    LevelComplete,  // 过关停顿 + 动画
-    LoadingNext,    // 
+    BeforeCutscene, // 准备过场动画阶段
+    InCutscene, // 过场动画中
+    AfterCutscene, // 过场动画结束阶段
+    LoadingNext,    // 加载下一关
     Paused, // 暂停
     GameOver, // 游戏结束
 }
@@ -47,7 +54,7 @@ pub enum GameState {
 //飞行物体
 #[derive(Resource)]
 pub struct BoidsImage(pub Handle<Image>);
-pub const FLY_COUNT: usize = 3;
+pub const FLY_COUNT: usize = 1;
 pub const FLY_SIZE: f32 = 0.2;
 pub const BOID_SPEED_INCREMENT: f32 = 30.0;
 
@@ -77,6 +84,10 @@ pub const DURATION_SPAN_DURATION: std::time::Duration = std::time::Duration::fro
 //音效
 #[derive(Resource)]
 pub struct ScoreSound(pub Handle<AudioSource>);
+#[derive(Resource)]
+pub struct FireworksSound(pub Handle<AudioSource>);
+#[derive(Resource)]
+pub struct GameStartedSound(pub Handle<AudioSource>);
 
 //计分面板
 pub const SCORE_TEXT_FONT_SIZE: f32 = 19.0;
@@ -91,4 +102,8 @@ pub const FPS_TIME_DURATION: std::time::Duration = std::time::Duration::from_mil
 pub const MARGIN: Val = Val::Px(3.);
 
 //过场动画
-pub const LEVEL_COMPLETE_DURATION: std::time::Duration = std::time::Duration::from_secs(6);
+pub const BEFORE_IN_GAME_DURATION: std::time::Duration = std::time::Duration::from_millis(1500);
+pub const BEFORE_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(1500);
+pub const IN_CUSTSCENE_DURATION: std::time::Duration = std::time::Duration::from_secs(4);
+pub const AFTER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(500);
+pub const OVER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(200);
