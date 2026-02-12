@@ -39,8 +39,9 @@ impl GameConfig {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, States, Default)]
 pub enum GameState {
-    Menu,   // 主菜单
     #[default]
+    None,       // 无状态
+    Menu,   // 主菜单
     BeforeInGame, // 准备开始游戏
     InGame,     // 游戏中
     BeforeCutscene, // 准备过场动画阶段
@@ -54,7 +55,7 @@ pub enum GameState {
 //飞行物体
 #[derive(Resource)]
 pub struct BoidsImage(pub Handle<Image>);
-pub const FLY_COUNT: usize = 1;
+pub const FLY_COUNT: usize = 20;
 pub const FLY_SIZE: f32 = 0.2;
 pub const BOID_SPEED_INCREMENT: f32 = 30.0;
 

@@ -12,24 +12,3 @@
     飞行物做成肥皂泡和各种小动物，有不同的碰撞体积和飞行速度。
     可以被子弹击中得分，时长最短的得分更高。 得分排名存储。
 
-
-//关卡
-            builder.spawn((
-                Text::new("关卡: "),
-                TextFont {
-                    font: global_font.0.clone(),
-                    font_size: SCORE_TEXT_FONT_SIZE,
-                    ..default()
-                },
-                TextColor(SCORE_TEXT_COLOR),
-            ))
-            .with_child((
-                GameLevelSpanType,
-                TextSpan::new("1"),
-                TextFont {
-                    font: global_font.0.clone(),
-                    font_size: SCORE_TEXT_FONT_SIZE,
-                    ..default()
-                },
-                TextColor(SCORE_TEXT_COLOR),
-            ));

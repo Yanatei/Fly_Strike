@@ -8,6 +8,7 @@ use crate::config::*;
 use crate::score_plug::*;
 use crate::fps_plug::*;
 use crate::game_state_plug::*;
+use crate::menu_plug::*;
 
 mod boids_plug;
 mod config;
@@ -17,12 +18,13 @@ mod bullet_plug;
 mod score_plug;
 mod fps_plug;
 mod game_state_plug;
-
+mod menu_plug;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(GameStatePlug)
+        .add_plugins(MenuPlug)
         .add_plugins(CannonPlugin)
         .add_plugins(BoidsPlugin)
         .add_plugins(BulletPlugin)
