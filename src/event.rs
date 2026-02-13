@@ -11,3 +11,7 @@ pub struct ScoreEvent;
 //生成下一关的飞行物体
 #[derive(Event)]
 pub struct NextLevelBoidsEvent;
+
+//自动切换到下一个游戏状态
+#[derive(Event)]
+pub struct AutoNextGameStateEvent;

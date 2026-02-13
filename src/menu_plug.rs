@@ -22,8 +22,8 @@ pub enum MenuAction{
     Back(MenuState),
 }
 
-#[derive(Resource)]
-struct AboutTextHandle(Handle<LoadedUntypedAsset>);
+// #[derive(Resource)]
+// struct AboutTextHandle(Handle<LoadedUntypedAsset>);
 
 #[derive(Component)]
 pub struct MainButton;
@@ -51,8 +51,6 @@ fn setup(mut commands: Commands,
     mut menu_state: ResMut<NextState<MenuState>>
 ) {
     let man_menu_icon = asset_server.load("images/main_menu_icon.png");
-
-    commands.insert_resource((AboutTextHandle(asset_server.load("about.txt"))));
 
     let margin_default =Val::Px(5.0);
     menu_state.set(MenuState::None);

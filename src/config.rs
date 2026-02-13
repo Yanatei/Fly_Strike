@@ -51,6 +51,7 @@ pub enum GameState {
     InGame,     // 游戏中
     InCutscene, // 过场动画中
     Paused, // 暂停
+    Leaderboard,//排行榜
     GameOver, // 游戏结束
 }
 
@@ -66,16 +67,15 @@ impl Default for GameStateDef {
             game_states: [
                 vec![GameState::BeforeInGame, GameState::InGame, GameState::InCutscene],
                 vec![GameState::InGame, GameState::InCutscene],
-                vec![GameState::InGame, GameState::InCutscene, GameState::GameOver],
+                vec![GameState::InGame, GameState::GameOver, GameState::Leaderboard],
             ],
         }
     }
 }
 
-
 //过场动画步骤
 #[derive(Debug, Clone, Eq, PartialEq, Hash, States, Default)]
-pub enum LevelStepState {
+pub enum CutsceneStepState {
     #[default]
     None,
     BeforeCutscene, // 准备过场动画阶段
@@ -89,7 +89,7 @@ pub enum LevelStepState {
 pub struct BoidsImage(pub Handle<Image>);
 pub const FLY_COUNT: usize = 20;
 pub const FLY_SIZE: f32 = 0.2;
-pub const BOID_SPEED_INCREMENT: f32 = 30.0;
+pub const BOID_SPEED_INCREMENT: f32 = 50.0;
 
 //炮台
 pub const CANNON_SIZE: f32 = 0.4;
@@ -139,7 +139,7 @@ pub const BEFORE_IN_GAME_DURATION: std::time::Duration = std::time::Duration::fr
 pub const BEFORE_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(1500);
 pub const IN_CUSTSCENE_DURATION: std::time::Duration = std::time::Duration::from_secs(4);
 pub const AFTER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(500);
-pub const OVER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(200);
+// pub const OVER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(200);
 
 pub const ABOUT_STR: &str ="
 Fly_Strike

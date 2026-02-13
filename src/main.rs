@@ -9,6 +9,7 @@ use crate::score_plug::*;
 use crate::fps_plug::*;
 use crate::game_state_plug::*;
 use crate::menu_plug::*;
+use crate::cutscene_plug::*;
 
 mod boids_plug;
 mod config;
@@ -19,6 +20,7 @@ mod score_plug;
 mod fps_plug;
 mod game_state_plug;
 mod menu_plug;
+mod cutscene_plug;
 
 fn main() {
     App::new()
