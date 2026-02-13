@@ -1,6 +1,8 @@
 //use bevy::color::Color;
 
-use bevy::{asset::Handle, audio::AudioSource, color::Color, ecs::resource::Resource, image::Image, state::state::States, text::Font, time::Timer, ui::Val};
+use std::default;
+
+use bevy::{asset::Handle, audio::AudioSource, color::Color, ecs::{component::Component, resource::Resource}, image::Image, state::state::States, text::Font, time::Timer, ui::Val};
 
 //game config
 #[derive(Resource)]
@@ -10,8 +12,9 @@ pub struct GameConfig {
 
     //计时,单位秒
     pub elapsed_time: [f32; 3],
-    //第几关
+    //第几关,第几步
     pub game_level: usize,
+    pub game_level_index: usize,
     //最大关数
     pub MAX_GAME_LEVEL: usize,
 
@@ -28,6 +31,7 @@ impl GameConfig {
             game_level: 0,
             MAX_GAME_LEVEL: 3,
             fireworks_count: 0,
+            game_level_index: 0,
         }
     }
     pub fn width_window_size(mut self, width: f32, height: f32) -> Self {
@@ -37,20 +41,48 @@ impl GameConfig {
     }
 }
 
+//游戏状态
 #[derive(Debug, Clone, Eq, PartialEq, Hash, States, Default)]
 pub enum GameState {
     #[default]
     None,       // 无状态
+    BeforeInGame,   // 准备进入游戏
     Menu,   // 主菜单
-    BeforeInGame, // 准备开始游戏
     InGame,     // 游戏中
-    BeforeCutscene, // 准备过场动画阶段
     InCutscene, // 过场动画中
-    AfterCutscene, // 过场动画结束阶段
-    LoadingNext,    // 加载下一关
     Paused, // 暂停
     GameOver, // 游戏结束
 }
+
+//游戏关卡状态定义, 一共三关
+#[derive(Resource)]
+pub struct GameStateDef{
+    pub game_states: [Vec<GameState>; 3],
+}
+
+impl Default for GameStateDef {
+    fn default() -> Self {
+        Self {
+            game_states: [
+                vec![GameState::BeforeInGame, GameState::InGame, GameState::InCutscene],
+                vec![GameState::InGame, GameState::InCutscene],
+                vec![GameState::InGame, GameState::InCutscene, GameState::GameOver],
+            ],
+        }
+    }
+}
+
+
+//过场动画步骤
+#[derive(Debug, Clone, Eq, PartialEq, Hash, States, Default)]
+pub enum LevelStepState {
+    #[default]
+    None,
+    BeforeCutscene, // 准备过场动画阶段
+    InCutscene, // 过场动画中
+    AfterCutscene, // 过场动画结束阶段
+}
+
 
 //飞行物体
 #[derive(Resource)]
@@ -108,3 +140,19 @@ pub const BEFORE_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::f
 pub const IN_CUSTSCENE_DURATION: std::time::Duration = std::time::Duration::from_secs(4);
 pub const AFTER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(500);
 pub const OVER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(200);
+
+pub const ABOUT_STR: &str ="
+Fly_Strike
+Version 0.1
+
+A fast-paced arcade challenge.
+
+Destroy all floating bubbles as quickly as possible.
+The faster you finish, the higher your score.
+
+Developed by Orc
+
+Contact:
+Email: zheng.yanan84@gmail.com
+GitHub: https://github.com/Yanatei
+";

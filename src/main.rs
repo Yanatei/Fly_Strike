@@ -63,7 +63,9 @@ fn pre_startup(
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut game_state: ResMut<NextState<GameState>>
 ) {
+    game_state.set(GameState::BeforeInGame);
 }
 
 

@@ -1,5 +1,5 @@
-use bevy::{color::palettes::css::*, log, platform::hash, prelude::*};
-use crate::config::GameState;
+use bevy::{asset::LoadedUntypedAsset, color::palettes::css::*, log, platform::hash, prelude::*};
+use crate::config::*;
 
 pub struct MenuPlug;
 
@@ -21,6 +21,9 @@ pub enum MenuAction{
     Exit,
     Back(MenuState),
 }
+
+#[derive(Resource)]
+struct AboutTextHandle(Handle<LoadedUntypedAsset>);
 
 #[derive(Component)]
 pub struct MainButton;
@@ -49,7 +52,9 @@ fn setup(mut commands: Commands,
 ) {
     let man_menu_icon = asset_server.load("images/main_menu_icon.png");
 
-    let MARGIN =Val::Px(5.0);
+    commands.insert_resource((AboutTextHandle(asset_server.load("about.txt"))));
+
+    let margin_default =Val::Px(5.0);
     menu_state.set(MenuState::None);
     //生成右上角的菜单按钮
     let button_node = Node {
@@ -70,8 +75,8 @@ fn setup(mut commands: Commands,
         width: percent(100),
         height: percent(100),
         border: UiRect::all(Val::Px(2.0)),
-        padding: MARGIN.all(),
-        margin: MARGIN.all(),
+        padding: margin_default.all(),
+        margin: margin_default.all(),
         ..default()
     };
 
@@ -165,8 +170,10 @@ fn create_man_menu(
     ));
 }
 
-fn create_about_menu(mut commands: Commands) {
-    let width_s = 0.7;
+fn create_about_menu(
+    mut commands: Commands,
+) {
+    let width_s = 0.5;
     let height_s = 0.7;
     let top_s = (1.0 - height_s) / 2.0;
     let left_s = (1.0 - width_s) / 2.0;
@@ -225,7 +232,7 @@ fn create_about_menu(mut commands: Commands) {
         ))
         .with_children(|title_node|{
             title_node.spawn((
-                Text::new("Title"),
+                Text::new("About"),
                 TextFont {
                     font_size: 16.0,
                     ..default()
@@ -256,7 +263,7 @@ fn create_about_menu(mut commands: Commands) {
                 ..default()
             },
             BackgroundColor(Color::from(WHITE_SMOKE)),
-            Text::new("关于这个小游戏要说明的东西.".to_string()),
+            Text::new(ABOUT_STR),
             TextFont {
                 font_size: 16.0,
                 ..default()
