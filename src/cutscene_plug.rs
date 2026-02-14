@@ -59,7 +59,8 @@ impl Plugin for CutScenePlugin {
         //退出最后一个烟花状态时，触发修改游戏状态
         app.add_systems(OnExit(CutsceneStepState::AfterCutscene), onExit_after_cutscene);
 
-        app.add_systems(Update, cutscene_system
+        //注册到游戏状态上，更新动画的状态
+        app.add_systems(Update, cutscene_state_system
             .run_if(in_state(GameState::InCutscene))
         );
     }
@@ -73,10 +74,11 @@ fn setup_system(
     create_effects(commands, effects);
 }
 
-fn cutscene_system(
+fn cutscene_state_system(
     mut commands: Commands,
     mut cutscene_timers: ResMut<CutSceneTimers>,
     mut next_state: ResMut<NextState<CutsceneStepState>>,
+    mut cur_state: ResMut<State<CutsceneStepState>>,
     cutscene_def: ResMut<CutSceneStateDef>,
     time: Res<Time>,
 ){
@@ -87,13 +89,18 @@ fn cutscene_system(
     times[index].tick(delta);
 
     let mut next_status = CutsceneStepState::None;
-    if times[index].is_finished() {
+    let mut next_index = index;
+    if times[index].just_finished() {
         if index + 1 >= cutscene_def.state.len() {
             next_status = CutsceneStepState::None;
+            next_index = 0;
         }else{
-            next_status = cutscene_def.state[index+1].clone();
+            next_status = cutscene_def.state[index+1];
+            next_index = index + 1;
         }
         next_state.set(next_status);
+        cutscene_timers.cur_index = next_index;
+        print!("cur_state={:?},next_state={:?}\n", cur_state, next_state);
     }
 }
 
@@ -118,10 +125,24 @@ fn on_before_cutscene(
 }
 fn on_in_cutscene(
     time: Res<Time>,
+    mut commands: Commands,
     mut cutscene_timers: ResMut<CutSceneTimers>,
+    mut q_spawner: Query<&mut EffectSpawner>,
+    fireworks_sound: Res<FireworksSound>,
 ) {
     //初始化计时器
     reset_cutscene_timer(&mut cutscene_timers);
+    //激活动画
+    let mut index = 0;
+    for (mut spawner) in q_spawner.iter_mut() {
+        spawner.reset();
+        spawner.active = true;
+
+        if index < 1 {
+            commands.spawn((AudioPlayer(fireworks_sound.0.clone()), PlaybackSettings::DESPAWN));
+        }
+        index += 1;
+    }
 }
 
 fn on_after_cutscene(

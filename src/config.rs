@@ -47,7 +47,6 @@ pub enum GameState {
     #[default]
     None,       // 无状态
     BeforeInGame,   // 准备进入游戏
-    Menu,   // 主菜单
     InGame,     // 游戏中
     InCutscene, // 过场动画中
     Paused, // 暂停
@@ -66,15 +65,15 @@ impl Default for GameStateDef {
         Self {
             game_states: [
                 vec![GameState::BeforeInGame, GameState::InGame, GameState::InCutscene],
-                vec![GameState::InGame, GameState::InCutscene],
-                vec![GameState::InGame, GameState::GameOver, GameState::Leaderboard],
+                vec![GameState::BeforeInGame, GameState::InGame, GameState::InCutscene],
+                vec![GameState::BeforeInGame, GameState::InGame, GameState::GameOver, GameState::Leaderboard],
             ],
         }
     }
 }
 
 //过场动画步骤
-#[derive(Debug, Clone, Eq, PartialEq, Hash, States, Default)]
+#[derive(Debug, Clone, Copy,Eq, PartialEq, Hash, States, Default)]
 pub enum CutsceneStepState {
     #[default]
     None,
@@ -83,11 +82,29 @@ pub enum CutsceneStepState {
     AfterCutscene, // 过场动画结束阶段
 }
 
+// 主菜单插件，展示和控制主菜单界面逻辑，1：设置声音大小，2：About界面，3:返回游戏
+//目前只有一个菜单界面，点击右上的按钮触发，弹出一个窗口，里面有三个按钮，分别是设置声音大小，About界面，返回游戏
+//点击About界面，弹出一个窗口，显示游戏的相关信息
+#[derive(Resource,Debug, Clone, Copy, Eq, PartialEq, Hash, Default, States)]
+pub enum MenuState {
+    ManMenu,
+    AboutMenu,
+    #[default]
+    None,
+}
+
+#[derive(Component, Debug)]
+pub enum MenuAction{
+    MainMenu,
+    About,
+    Exit,
+    Back(MenuState),
+}
 
 //飞行物体
 #[derive(Resource)]
 pub struct BoidsImage(pub Handle<Image>);
-pub const FLY_COUNT: usize = 20;
+pub const FLY_COUNT: usize = 3;
 pub const FLY_SIZE: f32 = 0.2;
 pub const BOID_SPEED_INCREMENT: f32 = 50.0;
 
@@ -139,7 +156,7 @@ pub const BEFORE_IN_GAME_DURATION: std::time::Duration = std::time::Duration::fr
 pub const BEFORE_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(1500);
 pub const IN_CUSTSCENE_DURATION: std::time::Duration = std::time::Duration::from_secs(4);
 pub const AFTER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(500);
-// pub const OVER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(200);
+pub const OVER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(200);//游戏结束时激发动画的时长
 
 pub const ABOUT_STR: &str ="
 Fly_Strike

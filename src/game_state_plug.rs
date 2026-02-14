@@ -44,10 +44,12 @@ impl Plugin for GameStatePlug {
         app.insert_resource(BeforeInGameTimer(Timer::new(BEFORE_IN_GAME_DURATION, TimerMode::Once)));
         app.insert_resource(GameStateDef::default());
 
+        //初始化
+        app.add_systems(Startup, setup_system);
         //游戏开始前，休息1.5s
         app.add_systems(OnEnter(GameState::BeforeInGame), on_before_in_game);
         app.add_systems(Update, before_in_game_system
-            .run_if(in_state(GameState::BeforeInGame))
+            .run_if(in_state(GameState::BeforeInGame).and(in_state(MenuState::None)))
         );
         //开始游戏时，给个声音提醒
         app.add_systems(OnEnter(GameState::InGame), on_in_game);
@@ -61,7 +63,7 @@ impl Plugin for GameStatePlug {
         //游戏中状态，实时逻辑处理
         //展示游戏时长，检测关卡结束
         app.add_systems(Update, in_game_system
-            .run_if(in_state(GameState::InGame))
+            .run_if(in_state(GameState::InGame).and(in_state(MenuState::None)))
         );
         //GameOver状态，多个烟火逻辑
         app.add_systems(Update, game_over_system
@@ -74,9 +76,8 @@ impl Plugin for GameStatePlug {
 
 fn setup_system(
     mut commands: Commands,
-    effects: ResMut<Assets<EffectAsset>>
 ) {
-    
+    commands.insert_resource(OverCutsceneTimer(Timer::new(OVER_CUTSCENE_DURATION, TimerMode::Once)));
 }
 
 fn on_before_in_game(
@@ -95,6 +96,10 @@ fn before_in_game_system(
     before_in_game_timer.0.tick(time.delta());
 
     if before_in_game_timer.0.is_finished() {
+        //更新游戏关卡显示
+        commands.trigger(GameLevelEvent);
+        //生成boids
+        commands.trigger(NextLevelBoidsEvent);
         //切换到下一游戏状态
         commands.trigger(AutoNextGameStateEvent);
     }
@@ -106,15 +111,12 @@ fn on_in_game(
 ) {
     //播放开始音效
     commands.spawn((AudioPlayer(game_started_sound.0.clone()), PlaybackSettings::DESPAWN));
-    //生成boids
-    commands.trigger(NextLevelBoidsEvent);
 }
 
 fn in_game_system(
     time: Res<Time>,
     mut commands: Commands,
     mut config: ResMut<GameConfig>,
-    mut next_state: ResMut<NextState<GameState>>,
     query: Query<&Boid>,
 ) {
     //累计时间
@@ -140,22 +142,26 @@ fn on_leaderboard(
 //驱动游戏状态按顺序变化
 fn on_AutoNextGameStateEvent(
     trigger: On<AutoNextGameStateEvent>,
+    mut cur_state: ResMut<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
     mut game_config: ResMut<GameConfig>,
     game_state_def: Res<GameStateDef>,
 ){
     let cur_level = game_config.game_level;
     let cur_level_index = game_config.game_level_index;
-    let mut next_level = 0;
-    let mut next_level_index = 0;
+    let mut next_level = cur_level;
+    let mut next_level_index = cur_level_index;
     let status_length = game_state_def.game_states[cur_level].len();
 
-    if cur_level_index <  status_length - 1 {//切换到下一个状态
+    if cur_level_index + 1 <  status_length {//切换到下一个状态
         next_level_index = cur_level_index + 1;
     }
     else if cur_level_index == status_length - 1 {//切换到下一关
         next_level_index = 0;
-        next_level = cur_level + 1;
+        //最后一关
+        if next_level + 1 < game_config.MAX_GAME_LEVEL {
+            next_level = cur_level + 1;
+        }
     }else{
         log::error!("advance_state_to_next error");
     }
@@ -163,13 +169,10 @@ fn on_AutoNextGameStateEvent(
     game_config.game_level = next_level;
     game_config.game_level_index = next_level_index;
     next_state.set(game_state_def.game_states[next_level][next_level_index].clone());
+    print!("game_level={},game_level_index={}, cur_state={:?}, next_state={:?}\n", next_level, next_level_index, cur_state, next_state);
 }
 
 fn on_in_cutscene(
-    mut commands: Commands,
-    mut in_cutscene_timer: ResMut<InCutsceneTimer>,
-    mut q_spawner: Query<&mut EffectSpawner>,
-    fireworks_sound: Res<FireworksSound>,
     mut cutscene_state: ResMut<NextState<CutsceneStepState>>,
 ) {
     //设置关卡动画的首个状态
@@ -198,7 +201,6 @@ fn on_game_over(
 fn game_over_system(
     time: Res<Time>,
     mut commands: Commands,
-    mut next_state: ResMut<NextState<GameState>>,
     mut over_cutscene_timer: ResMut<OverCutsceneTimer>,
     mut q_spawner: Query<&mut EffectSpawner>,
     fireworks_sound: Res<FireworksSound>,
@@ -221,26 +223,31 @@ fn game_over_system(
         game_config.fireworks_count += 1;
         over_cutscene_timer.0.reset();
     }
+
+    //动画效果技术，切换到下一状态
+    if over_cutscene_timer.0.is_finished() && game_config.fireworks_count >= 6 {
+        commands.trigger(AutoNextGameStateEvent);
+    }
 }
 
 //加载下一关：
 //重新生成boids, 并且给boids增加速度
 //切换到InGame状态
-fn on_loading_next(
-    mut next_state: ResMut<NextState<GameState>>,
-    mut commands: Commands,
-    mut game_config: ResMut<GameConfig>,
-    game_level_span: Single<&mut TextSpan, With<GameLevelSpanType>>,
-) {
-    //更新关卡数
-    game_config.game_level += 1;
-    //生成boids
-    commands.trigger(NextLevelBoidsEvent);
-    next_state.set(GameState::InGame);
+// fn on_loading_next(
+//     mut next_state: ResMut<NextState<GameState>>,
+//     mut commands: Commands,
+//     mut game_config: ResMut<GameConfig>,
+//     game_level_span: Single<&mut TextSpan, With<GameLevelSpanType>>,
+// ) {
+//     //更新关卡数
+//     game_config.game_level += 1;
+//     //生成boids
+//     commands.trigger(NextLevelBoidsEvent);
+//     next_state.set(GameState::InGame);
 
-    //更新关卡显示
-    let game_level_span = game_level_span.into_inner();
-    **(game_level_span.into_inner()) = (game_config.game_level + 1).to_string();
-}
+//     //更新关卡显示
+//     let game_level_span = game_level_span.into_inner();
+//     **(game_level_span.into_inner()) = (game_config.game_level + 1).to_string();
+// }
 
 

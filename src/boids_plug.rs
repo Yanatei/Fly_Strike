@@ -76,7 +76,9 @@ impl Plugin for BoidsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(BoidConfig::default());
         app.add_systems(Startup, setup);
-        app.add_systems(Update, boid_system.run_if(in_state(GameState::InGame)));
+        app.add_systems(Update, boid_system
+            .run_if(in_state(GameState::InGame)).run_if(in_state(MenuState::None))
+        );
         app.add_observer(on_NextLevelBoidsEvent);
     }
 }

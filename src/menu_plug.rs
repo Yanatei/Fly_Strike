@@ -3,25 +3,6 @@ use crate::config::*;
 
 pub struct MenuPlug;
 
-// 主菜单插件，展示和控制主菜单界面逻辑，1：设置声音大小，2：About界面，3:返回游戏
-//目前只有一个菜单界面，点击右上的按钮触发，弹出一个窗口，里面有三个按钮，分别是设置声音大小，About界面，返回游戏
-//点击About界面，弹出一个窗口，显示游戏的相关信息
-#[derive(Resource,Debug, Clone, Copy, Eq, PartialEq, Hash, Default, States)]
-pub enum MenuState {
-    ManMenu,
-    AboutMenu,
-    #[default]
-    None,
-}
-
-#[derive(Component, Debug)]
-pub enum MenuAction{
-    MainMenu,
-    About,
-    Exit,
-    Back(MenuState),
-}
-
 // #[derive(Resource)]
 // struct AboutTextHandle(Handle<LoadedUntypedAsset>);
 
@@ -40,9 +21,8 @@ impl Plugin for MenuPlug {
         app.add_systems(Startup, setup);//生成游戏界面右上角的菜单按钮，同时初始化菜单状态为None
         app.add_systems(OnEnter(MenuState::ManMenu), create_man_menu); // 进入主菜单时创建主菜单界面
         app.add_systems(OnEnter(MenuState::AboutMenu), create_about_menu);// 进入About菜单时创建About界面
-        // app.add_systems(OnEnter(MenuState::None), on_back_menu);// 菜单关闭时回到游戏状态
         app.add_systems(Update, man_menu_action);// 在游戏状态下监听菜单按钮的交互事件
-        app.add_systems(Update, menu_action.run_if(in_state(GameState::Menu)));// 在游戏状态下监听菜单按钮的交互事件
+        app.add_systems(Update, menu_action.run_if(not(in_state(MenuState::None))));// 在菜单状态下监听菜单按钮的交互事件
     } 
 }
 
@@ -200,8 +180,8 @@ fn create_about_menu(
         //windows root
         DespawnOnExit(MenuState::AboutMenu),
         Node {
-            width: Val::Percent(80.0),
-            height: Val::Percent(80.0),
+            width: Val::Percent(width_s * 100.),
+            height: Val::Percent(height_s * 100.),
             position_type: PositionType::Absolute,
             top: Val::Percent(top_s * 100.0),
             left: Val::Percent(left_s * 100.0),
@@ -271,12 +251,6 @@ fn create_about_menu(
     });
 }
 
-fn on_back_menu(
-    mut game_state: ResMut<NextState<GameState>>
-) {
-    game_state.set(GameState::InGame);
-}
-
 fn man_menu_action(
     mut commands: Commands,
     mut menu_state: ResMut<NextState<MenuState>>,
@@ -285,7 +259,7 @@ fn man_menu_action(
 ){
     let (interaction, menu_action) = interaction_query.into_inner();
     if *interaction == Interaction::Pressed {
-        game_state.set(GameState::Menu);
+        menu_state.set(MenuState::ManMenu);
     }
 }
 
@@ -307,9 +281,6 @@ fn menu_action(
                 },
                 MenuAction::Back(in_state) => {
                     menu_state.set(*in_state);
-                    if *in_state == MenuState::None {
-                        game_state.set(GameState::InGame);
-                    }
                 },
                 MenuAction::Exit => {
                     message_writer.write(AppExit::Success);

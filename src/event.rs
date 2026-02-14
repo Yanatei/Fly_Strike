@@ -8,6 +8,10 @@ pub struct FireEvent(pub Vec3);
 #[derive(Event)]
 pub struct ScoreEvent;
 
+//关卡显示
+#[derive(Event)]
+pub struct GameLevelEvent;
+
 //生成下一关的飞行物体
 #[derive(Event)]
 pub struct NextLevelBoidsEvent;

@@ -29,6 +29,7 @@ impl Plugin for ScorelPlugin {
         app.add_systems(Startup, setup);
         app.add_systems(Update, (score_update_system, elapsed_time_update_system).run_if(in_state(GameState::InGame)));
         app.add_observer(on_scored);//添加观察者，得分时触发
+        app.add_observer(on_next_level);//添加观察者，进入下一关时触发
     }
 }
 
@@ -199,4 +200,14 @@ fn on_scored(
     commands.spawn((AudioPlayer(sound.0.clone()), PlaybackSettings::DESPAWN));
     let (text, _) = score_text.into_inner();
     **(text.into_inner()) = score.0.to_string();
+}
+
+//更新游戏等级展示
+fn on_next_level(
+    trigger: On<GameLevelEvent>,
+    game_level_span: Single<&mut TextSpan, With<GameLevelSpanType>>,
+    game_config: ResMut<GameConfig>,
+) {
+    let game_level_span = game_level_span.into_inner();
+    **(game_level_span.into_inner()) = (game_config.game_level + 1).to_string();
 }
