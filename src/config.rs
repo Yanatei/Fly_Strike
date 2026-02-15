@@ -2,7 +2,10 @@
 
 use std::default;
 
-use bevy::{asset::Handle, audio::AudioSource, color::Color, ecs::{component::Component, resource::Resource}, image::Image, state::state::States, text::Font, time::Timer, ui::Val};
+use bevy::{asset::Handle, audio::AudioSource, color::Color, 
+    ecs::{component::Component, resource::Resource}, 
+    image::Image, log, state::state::States, text::Font,
+    time::Timer, ui::Val, window::*};
 
 //game config
 #[derive(Resource)]
@@ -52,6 +55,57 @@ pub enum GameState {
     Paused, // 暂停
     Leaderboard,//排行榜
     GameOver, // 游戏结束
+}
+
+//抽象定义不同平台的窗口
+pub trait WindowsConfig {
+    fn apply_to(&self, window: &mut Window);
+    fn log(&self);
+}
+
+//桌面平台
+#[derive(Resource)]
+struct DesktopConfig;
+
+//Andriod平台
+#[derive(Resource)]
+struct AndroidConfig;
+
+impl WindowsConfig for DesktopConfig {
+    fn apply_to(&self, window: &mut Window) {
+        
+    }
+
+    fn log(&self) {
+        log::info!("Desktop config, use default windows")
+    }
+}
+//安卓平台，设置为全屏幕
+impl WindowsConfig for AndroidConfig {
+    fn apply_to(&self, window: &mut Window) {
+        window.resolution.set(0.0, 0.0);
+        window.mode = WindowMode::BorderlessFullscreen(MonitorSelection::Current);
+        window.present_mode = PresentMode::AutoVsync;
+        window.resizable = false;
+    }
+
+    fn log(&self) {
+        log::info!("使用 Android 配置：全屏");
+    }
+}
+
+type BoxedWindowConfig = Box<dyn WindowsConfig>;
+
+pub fn get_platform_window_config() -> BoxedWindowConfig {
+    if cfg!(target_os = "android") {
+        Box::new(AndroidConfig)
+    } else if cfg!(target_os = "ios") {
+        Box::new(AndroidConfig)
+    } else if cfg!(any(target_os="windows", target_os="linux", target_os="macos")) {
+        Box::new(DesktopConfig)
+    }else{
+        Box::new(DesktopConfig)
+    }
 }
 
 //游戏关卡状态定义, 一共三关

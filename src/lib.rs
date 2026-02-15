@@ -40,10 +40,15 @@ pub fn main() {
 }
 
 fn pre_startup(
-    window: Single<&Window, With<PrimaryWindow>>,
+    mut window: Single<&mut Window, With<PrimaryWindow>>,
     mut commands: Commands, 
     asset_server: Res<AssetServer>
 ) {
+    //设置窗口大小
+    let window_config = get_platform_window_config();
+    window_config.apply_to(&mut window);
+    window_config.log();
+    
     commands.spawn(Camera2d);
     load_font(&mut commands, &asset_server);
 
