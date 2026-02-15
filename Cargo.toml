@@ -1,5 +1,5 @@
 [package]
-name = "Fly_Strike"
+name = "fly_strike"
 version = "0.1.0"
 edition = "2024"
 
@@ -10,13 +10,12 @@ bevy = {version = "0.18.0", features = ["wav"]}
 bevy_hanabi = "0.18.0"
 rand = "0.9.2"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
+#[lib]
+#crate-type = ["cdylib"]
 
 [[bin]]
-name = "Fly_Strike"
+name = "fly_strike"
 path = "src/main.rs"
-#required-features = ["desktop"]
 
 #[features]
 #desktop = []
@@ -24,4 +23,4 @@ path = "src/main.rs"
 [package.metadata.android]
 build_targets = ["aarch64-linux-android"]
 target_sdk_version = 35
-min_sdk_version = 21
+min_sdk_version = 26

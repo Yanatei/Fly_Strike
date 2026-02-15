@@ -3,15 +3,6 @@
 version = 4
 
 [[package]]
-name = "Fly_Strike"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_hanabi",
- "rand",
-]
-
-[[package]]
 name = "ab_glyph"
 version = "0.2.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2347,6 +2338,15 @@ checksum = "843fba2746e448b37e26a819579957415c8cef339bf08564fe8b7ddbd959573c"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
+]
+
+[[package]]
+name = "fly_strike"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_hanabi",
+ "rand",
 ]
 
 [[package]]
