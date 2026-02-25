@@ -5,18 +5,19 @@ edition = "2024"
 
 [dependencies]
 #增加调试信息，打印错误时会打印对象名称
-#bevy = {version = "0.18.0", features = ["debug","wav"]}
-bevy = {version = "0.18.0", features = ["wav"]}
+bevy = {version = "0.18.0", features = ["debug","wav"]}
+#bevy = {version = "0.18.0", features = ["wav"]}
 bevy_hanabi = "0.18.0"
 leafwing-input-manager = "0.20.0"
 rand = "0.9.2"
 
 [lib]
 crate-type = ["cdylib"]
+path = "src/main.rs"
 
-#[[bin]]
-#name = "fly_strike"
-#path = "src/lib.rs"
+[[bin]]
+name = "fly_strike"
+path = "src/main.rs"
 
 [package.metadata.android]
 build_targets = ["aarch64-linux-android"]

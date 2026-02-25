@@ -26,9 +26,8 @@ cargo run --features desktop
 
 ---android 项目 [armeabi-v7a, arm64-v8a]
 cargo clean
-cargo ndk -t arm64-v8a build --release
-cargo ndk -t arm64-v8a -o android/app/src/main/jniLibs build --release
-cargo ndk -t armeabi-v7a -o android/app/src/main/jniLibs build --release
+cargo ndk -t arm64-v8a build --release --lib
+cargo run --bin fly_strike
 
 --这二个只能存在一个
 [lib]

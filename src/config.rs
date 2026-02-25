@@ -19,7 +19,7 @@ pub struct GameConfig {
     pub game_level: usize,
     pub game_level_index: usize,
     //最大关数
-    pub MAX_GAME_LEVEL: usize,
+    pub max_game_level: usize,
 
     //游戏结束时的烟花计数器
     pub fireworks_count: usize,
@@ -32,7 +32,7 @@ impl GameConfig {
             window_height: 500.0,
             elapsed_time: [0.0; 3],
             game_level: 0,
-            MAX_GAME_LEVEL: 3,
+            max_game_level: 3,
             fireworks_count: 0,
             game_level_index: 0,
         }
@@ -69,7 +69,7 @@ struct DesktopConfig;
 
 //Andriod平台
 #[derive(Resource)]
-struct AndroidConfig;
+struct MobileConfig;
 
 impl WindowsConfig for DesktopConfig {
     fn apply_to(&self, window: &mut Window) {
@@ -81,7 +81,7 @@ impl WindowsConfig for DesktopConfig {
     }
 }
 //安卓平台，设置为全屏幕
-impl WindowsConfig for AndroidConfig {
+impl WindowsConfig for MobileConfig {
     fn apply_to(&self, window: &mut Window) {
         window.resolution.set(0.0, 0.0);
         window.mode = WindowMode::BorderlessFullscreen(MonitorSelection::Current);
@@ -90,7 +90,7 @@ impl WindowsConfig for AndroidConfig {
     }
 
     fn log(&self) {
-        log::info!("使用 Android 配置：全屏");
+        log::info!("使用 MObile 配置：全屏");
     }
 }
 
@@ -98,9 +98,9 @@ type BoxedWindowConfig = Box<dyn WindowsConfig>;
 
 pub fn get_platform_window_config() -> BoxedWindowConfig {
     if cfg!(target_os = "android") {
-        Box::new(AndroidConfig)
+        Box::new(MobileConfig)
     } else if cfg!(target_os = "ios") {
-        Box::new(AndroidConfig)
+        Box::new(MobileConfig)
     } else if cfg!(any(target_os="windows", target_os="linux", target_os="macos")) {
         Box::new(DesktopConfig)
     }else{

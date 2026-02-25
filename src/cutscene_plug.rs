@@ -57,7 +57,7 @@ impl Plugin for CutScenePlugin {
         app.add_systems(OnEnter(CutsceneStepState::AfterCutscene), on_after_cutscene);
 
         //退出最后一个烟花状态时，触发修改游戏状态
-        app.add_systems(OnExit(CutsceneStepState::AfterCutscene), onExit_after_cutscene);
+        app.add_systems(OnExit(CutsceneStepState::AfterCutscene), on_exit_after_cutscene);
 
         //注册到游戏状态上，更新动画的状态
         app.add_systems(Update, cutscene_state_system
@@ -104,7 +104,7 @@ fn cutscene_state_system(
     }
 }
 
-fn onExit_after_cutscene(
+fn on_exit_after_cutscene(
     mut commands: Commands,
 ){
     commands.trigger(AutoNextGameStateEvent);
@@ -117,14 +117,12 @@ fn reset_cutscene_timer(cutscene_timers: &mut CutSceneTimers){
 }
 
 fn on_before_cutscene(
-    mut commands: Commands,
     mut cutscene_timers: ResMut<CutSceneTimers>,
 ) {
     //初始化计时器
     reset_cutscene_timer(&mut cutscene_timers);
 }
 fn on_in_cutscene(
-    time: Res<Time>,
     mut commands: Commands,
     mut cutscene_timers: ResMut<CutSceneTimers>,
     mut q_spawner: Query<&mut EffectSpawner>,
@@ -134,7 +132,7 @@ fn on_in_cutscene(
     reset_cutscene_timer(&mut cutscene_timers);
     //激活动画
     let mut index = 0;
-    for (mut spawner) in q_spawner.iter_mut() {
+    for mut spawner in q_spawner.iter_mut() {
         spawner.reset();
         spawner.active = true;
 

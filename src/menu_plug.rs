@@ -37,9 +37,9 @@ fn setup(mut commands: Commands,
     //生成右上角的菜单按钮
     let button_node = Node {
         position_type: PositionType::Absolute,
-        top: Val::Px(10.0),
+        top: Val::Px(5.0),
         right: Val::Px(5.0),
-        width: Val::Percent(3.0),
+        width: Val::Percent(8.0),
         height: Val::Auto,
         aspect_ratio: Some(1.0),
         border: UiRect::all(Val::Px(2.0)),

@@ -80,6 +80,7 @@ impl Plugin for BoidsPlugin {
             .run_if(in_state(GameState::InGame)).run_if(in_state(MenuState::None))
         );
         app.add_observer(on_NextLevelBoidsEvent);
+        app.add_observer(on_boids_relimit_event);
     }
 }
 
@@ -236,4 +237,13 @@ pub fn boid_system(
             transform.rotation = Quat::from_rotation_z(angle);
         }
     }
+}
+
+fn on_boids_relimit_event(
+    trigger: On<BoidsReLimitEvent>,
+    mut boid_config: ResMut<BoidConfig>,
+    game_config: Res<GameConfig>
+){
+    boid_config.limit_x = game_config.window_width / 2.0;
+    boid_config.limit_y = game_config.window_height / 2.0;
 }

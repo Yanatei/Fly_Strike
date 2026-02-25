@@ -70,7 +70,7 @@ impl Plugin for GameStatePlug {
             .run_if(in_state(GameState::GameOver))
         );
         //注册游戏状态切换观察者
-        app.add_observer(on_AutoNextGameStateEvent);
+        app.add_observer(on_auto_next_game_state_event);
     }
 }
 
@@ -121,7 +121,7 @@ fn in_game_system(
 ) {
     //累计时间
     let game_level = config.game_level;
-    if game_level < config.MAX_GAME_LEVEL{
+    if game_level < config.max_game_level{
         config.elapsed_time[game_level] += time.delta_secs();
     }
 
@@ -140,7 +140,7 @@ fn on_leaderboard(
 }
 
 //驱动游戏状态按顺序变化
-fn on_AutoNextGameStateEvent(
+fn on_auto_next_game_state_event(
     trigger: On<AutoNextGameStateEvent>,
     mut cur_state: ResMut<State<GameState>>,
     mut next_state: ResMut<NextState<GameState>>,
@@ -159,7 +159,7 @@ fn on_AutoNextGameStateEvent(
     else if cur_level_index == status_length - 1 {//切换到下一关
         next_level_index = 0;
         //最后一关
-        if next_level + 1 < game_config.MAX_GAME_LEVEL {
+        if next_level + 1 < game_config.max_game_level {
             next_level = cur_level + 1;
         }
     }else{

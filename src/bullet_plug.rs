@@ -18,7 +18,7 @@ impl Plugin for BulletPlugin {
         app.insert_resource(BulletTimer(Timer::new(BULLET_TIME_DURATION, TimerMode::Once)));
         app.add_systems(Startup, setup);
         app.add_systems(Update, (bullet_move_system, collision_system).chain()
-            .run_if(not(in_state(GameState::Leaderboard).or(in_state(MenuState::None))))
+            .run_if(not(in_state(GameState::Paused).or(in_state(GameState::Leaderboard)).or(not(in_state(MenuState::None)))))
         );
         app.add_observer(on_fired);//添加观察者，开火时触发
     }

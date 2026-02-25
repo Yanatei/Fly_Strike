@@ -19,3 +19,11 @@ pub struct NextLevelBoidsEvent;
 //自动切换到下一个游戏状态
 #[derive(Event)]
 pub struct AutoNextGameStateEvent;
+
+//重新调整炮台的位置(窗口尺寸发生改变)
+#[derive(Event)]
+pub struct CannonReLocationEvent;
+
+//重新调整飞鸟的飞行限制(窗口尺寸发生改变)
+#[derive(Event)]
+pub struct BoidsReLimitEvent;

@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use bevy::asset::transformer;
 //炮台
 use bevy::{prelude::*, time};
 use crate::config::*;
@@ -38,7 +39,10 @@ pub struct CannonPlugin;
 impl Plugin for CannonPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
-        app.add_systems(Update, (cannon_move_system, execute_cannon_animations));
+        app.add_systems(Update, (cannon_move_system, execute_cannon_animations)
+            .run_if(not(in_state(GameState::Paused).or(in_state(GameState::Leaderboard)).or(not(in_state(MenuState::None)))))
+        );
+        app.add_observer(on_cannon_re_location_event);
     }
 }
 
@@ -48,7 +52,7 @@ fn setup(mut commands: Commands,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let pos_x = 0.0;
-    let pos_y = -(game_config.window_height/2.0) + CANNON_HEIGHT as f32/2.0;
+    let pos_y = get_cannon_y(game_config.window_height);
 
     //let i_handel = asset_server.load("images/cannon.png");
     let texture = asset_server.load("images/paotai.png");
@@ -123,4 +127,18 @@ fn execute_cannon_animations(
             animation_config.frame_timer.reset();
         }
     }
+}
+
+fn on_cannon_re_location_event(
+    trigger: On<CannonReLocationEvent>,
+    mut query: Single<(Entity, &mut Transform, &mut Cannon)>,
+    game_config: Res<GameConfig>,
+){
+    let (_, mut transform, _) = query.into_inner();
+    transform.translation.y = get_cannon_y(game_config.window_height);
+}
+
+fn get_cannon_y(window_height: f32) -> f32 {
+    let pos_y = -(window_height/2.0) + CANNON_HEIGHT as f32/2.0;
+    pos_y
 }

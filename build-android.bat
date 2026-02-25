@@ -14,7 +14,7 @@ echo.
 set "TARGET_ROOT=E:\Develop\Andriod\android_example\app\src\main"
 set "TARGET_DIR=%TARGET_ROOT%\jniLibs"
 set "ARCH=arm64-v8a"
-set "BUILD_MODE=--release"
+set "BUILD_MODE=--release --lib"
 
 :: 可选：如果你想同时构建多个架构，取消下面注释并修改
 :: set "ARCHS=arm64-v8a armeabi-v7a"

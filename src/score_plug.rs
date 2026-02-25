@@ -39,7 +39,7 @@ fn setup(
 ) {
     commands.spawn((
         Node {
-            width: percent(15),
+            width: percent(25),
             height: percent(13),
             border: UiRect::all(Val::Px(2.0)),
             display: Display::Flex,
