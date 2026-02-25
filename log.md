@@ -20,18 +20,15 @@ rustup target add aarch64-linux-android
 rustup target add armv7-linux-androideabi
 cargo install cargo-ndk
 
-
---windows编译----
-cargo run --features desktop
-
 ---android 项目 [armeabi-v7a, arm64-v8a]
 cargo clean
 cargo ndk -t arm64-v8a build --release --lib
-cargo run --bin fly_strike
+./build-android.bat
 
---这二个只能存在一个
-[lib]
-[bin]
+---windows项目
+cargo clean
+cargo build --bin fly_strike
+cargo run --bin fly_strike
 
 --最终能在安卓上跑起来---
 把bevy里的项目复制过来，在些基础上再修改
