@@ -13,6 +13,7 @@ use crate::fps_plug::*;
 use crate::game_state_plug::*;
 use crate::menu_plug::*;
 use crate::cutscene_plug::*;
+use crate::player_plug::*;
 
 mod boids_plug;
 mod config;
@@ -24,6 +25,7 @@ mod fps_plug;
 mod game_state_plug;
 mod menu_plug;
 mod cutscene_plug;
+mod player_plug;
 
 #[bevy_main]
 fn main() {
@@ -36,6 +38,7 @@ fn main() {
         .add_plugins(BulletPlugin)
         .add_plugins(ScorelPlugin)
         .add_plugins(FpsPlugin)
+        .add_plugins(PlayerPlug)
         .add_systems(PreStartup, pre_startup)
         .add_systems(Startup, setup)
         .add_systems(Update, on_resize_window)
@@ -59,7 +62,6 @@ fn pre_startup(
     let width = window.width();
     let height = window.height();
     commands.insert_resource(GameConfig::default().width_window_size(width, height));
-    log::info!("windows.wdith={},windows.height={}", width, height);
     
     //音效
     let sound = asset_server.load("sounds/score.wav");

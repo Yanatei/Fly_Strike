@@ -68,17 +68,16 @@ impl Plugin for CutScenePlugin {
 
 fn setup_system(
     mut commands: Commands, 
-    effects: ResMut<Assets<EffectAsset>>
+    effects: ResMut<Assets<EffectAsset>>,
+    game_config: Res<GameConfig>,
 ) {
     //初始化粒子系统资源
-    create_effects(commands, effects);
+    create_effects(commands, effects, game_config);
 }
 
 fn cutscene_state_system(
-    mut commands: Commands,
     mut cutscene_timers: ResMut<CutSceneTimers>,
     mut next_state: ResMut<NextState<CutsceneStepState>>,
-    mut cur_state: ResMut<State<CutsceneStepState>>,
     cutscene_def: ResMut<CutSceneStateDef>,
     time: Res<Time>,
 ){
@@ -100,7 +99,6 @@ fn cutscene_state_system(
         }
         next_state.set(next_status);
         cutscene_timers.cur_index = next_index;
-        print!("cur_state={:?},next_state={:?}\n", cur_state, next_state);
     }
 }
 
@@ -153,8 +151,10 @@ fn on_after_cutscene(
 fn create_effects(
     mut commands: Commands,
     mut effects: ResMut<Assets<EffectAsset>>,
+    game_config: Res<GameConfig>,
 ) {
-    let first_effect = effects.add(create_first_effect());
+    let window_height = game_config.window_height;
+    let first_effect = effects.add(create_first_effect(window_height));
     let first_entity = commands.spawn((
         Name::new("FirstEffect"),
         ParticleEffect::new(first_effect),
@@ -175,17 +175,18 @@ fn create_effects(
     ));
 }
 
-fn create_first_effect() -> EffectAsset {
+fn create_first_effect(window_height: f32) -> EffectAsset {
+    let pos_y = 0. - window_height/3.;
     let writer = ExprWriter::new();
     let init_pos = SetPositionCircleModifier {
-        center: writer.lit(Vec3::new(0., -300., 0.)).expr(),
+        center: writer.lit(Vec3::new(0., pos_y, 0.)).expr(),
         axis: writer.lit(Vec3::Y).expr(),
         radius: writer.lit(2.0).expr(),
         dimension: ShapeDimension::Volume,
     };
 
     let zero = writer.lit(0.0);
-    let y = writer.lit(2000.).uniform(writer.lit(2100.));
+    let y = writer.lit(1600.).uniform(writer.lit(1700.));
     let v= zero.clone().vec3(y, zero);
 
     let init_val = SetAttributeModifier::new(Attribute::VELOCITY, v.expr());
@@ -344,7 +345,7 @@ fn create_third_effect() -> EffectAsset {
     color_gradient.add_key(0.6, Vec4::new(4.0, 4.0, 4.0, 1.0));
     color_gradient.add_key(1.0, Vec4::new(4.0, 4.0, 4.0, 0.0));
 
-    EffectAsset::new(10000, spawner, writer.finish())
+    EffectAsset::new(1000, spawner, writer.finish())
         .with_name("ThirdEffect")
         .init(init_pos)
         .init(init_color)

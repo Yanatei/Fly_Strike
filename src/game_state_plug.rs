@@ -20,15 +20,15 @@ struct BeforeInGameTimer(Timer);
 
 //游戏中，不需要额外计时器
 
-//过场动画计时 before
-#[derive(Resource)]
-struct BeforeCutsceneTimer(Timer);
+// //过场动画计时 before
+// #[derive(Resource)]
+// struct BeforeCutsceneTimer(Timer);
 //过场动画计时
-#[derive(Resource)]
-struct InCutsceneTimer(Timer);
-//过场动画计时 after
-#[derive(Resource)]
-struct AfterCutsceneTimer(Timer);
+// #[derive(Resource)]
+// struct InCutsceneTimer(Timer);
+// //过场动画计时 after
+// #[derive(Resource)]
+// struct AfterCutsceneTimer(Timer);
 //加载下一关，不需要额外计时器
 
 //游戏结束动画计时器

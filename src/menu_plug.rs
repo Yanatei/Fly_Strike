@@ -12,8 +12,8 @@ pub struct MainButton;
 #[derive(Component)]
 pub struct OnManMenuScreen;
 
-#[derive(Component)]
-pub struct OnAboutMenuScreen;
+// #[derive(Component)]
+// pub struct OnAboutMenuScreen;
 
 impl Plugin for MenuPlug {
     fn build(&self, app: &mut App) {
@@ -73,7 +73,7 @@ fn setup(mut commands: Commands,
 fn create_man_menu(
     mut commands: Commands,
 ) {
-    let width_s = 0.3;
+    let width_s = 0.5;
     let height_s = 0.5;
     let top_s = (1.0 - height_s) / 2.0;
     let left_s = (1.0 - width_s) / 2.0;
@@ -151,7 +151,7 @@ fn create_man_menu(
 fn create_about_menu(
     mut commands: Commands,
 ) {
-    let width_s = 0.5;
+    let width_s = 0.7;
     let height_s = 0.7;
     let top_s = (1.0 - height_s) / 2.0;
     let left_s = (1.0 - width_s) / 2.0;

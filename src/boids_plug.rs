@@ -79,7 +79,7 @@ impl Plugin for BoidsPlugin {
         app.add_systems(Update, boid_system
             .run_if(in_state(GameState::InGame)).run_if(in_state(MenuState::None))
         );
-        app.add_observer(on_NextLevelBoidsEvent);
+        app.add_observer(on_next_level_boids_event);
         app.add_observer(on_boids_relimit_event);
     }
 }
@@ -106,7 +106,7 @@ fn setup(
 }
 
 //生成下一关的boids
-fn on_NextLevelBoidsEvent(
+fn on_next_level_boids_event(
     trigger: On<NextLevelBoidsEvent>,
     mut commands: Commands,
     boids_image_res: Res<BoidsImage>,

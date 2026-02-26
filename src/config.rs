@@ -182,7 +182,19 @@ pub struct GlobalFont(pub Handle<Font>);
 
 //计分
 #[derive(Resource)]
-pub struct Score(pub u32);
+pub struct Score {
+    pub count: u16,
+    pub score: f32,
+    pub last_delta: f32,
+    pub cur_delta: f32,
+}
+
+impl Default for Score {
+    fn default() -> Self {
+        Self { count: 0, score:0., last_delta: 0., cur_delta: 0. }
+    }
+}
+
 pub const DURATION_SPAN_DURATION: std::time::Duration = std::time::Duration::from_millis(100);
 
 //音效
@@ -194,7 +206,7 @@ pub struct FireworksSound(pub Handle<AudioSource>);
 pub struct GameStartedSound(pub Handle<AudioSource>);
 
 //计分面板
-pub const SCORE_TEXT_FONT_SIZE: f32 = 19.0;
+pub const SCORE_TEXT_FONT_SIZE: f32 = 15.0;
 pub const SCORE_TEXT_COLOR: Color = Color::srgb(0.5, 0.5, 1.0);
 
 //FPS

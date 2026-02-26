@@ -1,7 +1,9 @@
 //计分面板
 
+use std::fmt::format;
+
 use bevy::color::palettes::css::{BLUE, YELLOW};
-use bevy::{prelude::*};
+use bevy::{log, prelude::*};
 use crate::event::*;
 use crate::config::*;
 
@@ -24,10 +26,10 @@ pub struct ScorelPlugin;
 
 impl Plugin for ScorelPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Score(0));
+        app.insert_resource(Score::default());
         app.insert_resource(DurationSpanTimer(Timer::new(DURATION_SPAN_DURATION, TimerMode::Repeating)));
         app.add_systems(Startup, setup);
-        app.add_systems(Update, (score_update_system, elapsed_time_update_system).run_if(in_state(GameState::InGame)));
+        app.add_systems(Update, (elapsed_time_update_system).run_if(in_state(GameState::InGame)));
         app.add_observer(on_scored);//添加观察者，得分时触发
         app.add_observer(on_next_level);//添加观察者，进入下一关时触发
     }
@@ -39,7 +41,7 @@ fn setup(
 ) {
     commands.spawn((
         Node {
-            width: percent(25),
+            width: percent(30),
             height: percent(13),
             border: UiRect::all(Val::Px(2.0)),
             display: Display::Flex,
@@ -113,7 +115,7 @@ fn setup(
             ))
             .with_child((
                 ScoreSpanType,
-                TextSpan::new("1"),
+                TextSpan::new("0"),
                 TextFont {
                     font: global_font.0.clone(),
                     font_size: SCORE_TEXT_FONT_SIZE,
@@ -168,14 +170,6 @@ fn setup(
     });
 }
 
-fn score_update_system(
-    score: ResMut<Score>, 
-    score_span_query: Single<&mut TextSpan, With<ScoreSpanType>>
-) {
-    let score_span = score_span_query.into_inner();
-    **(score_span.into_inner()) = score.0.to_string();
-}
-
 fn elapsed_time_update_system(
     config: ResMut<GameConfig>,
     duration_span_query: Single<&mut TextSpan, With<DurationSpanType>>,
@@ -194,12 +188,35 @@ fn on_scored(
     trigger: On<ScoreEvent>,
     mut commands: Commands, sound: Res<ScoreSound>, 
     mut score: ResMut<Score>,
-    score_text: Single<(&mut TextSpan, &mut TextColor), With<ScoreSpanType>>
+    score_text: Single<(&mut TextSpan, &mut TextColor), With<ScoreSpanType>>,
+    game_config: ResMut<GameConfig>,
 ) {
-    score.0 += 1;
+    let sum_elapsed: f32 = game_config.elapsed_time.iter().sum();
+    update_score(&mut score, sum_elapsed);
     commands.spawn((AudioPlayer(sound.0.clone()), PlaybackSettings::DESPAWN));
+
     let (text, _) = score_text.into_inner();
-    **(text.into_inner()) = score.0.to_string();
+    **(text.into_inner()) = format!("{:.2}", &score.score);
+}
+
+fn update_score(score: &mut Score, total_desc: f32){
+    let max= 20.0f32;
+    let min = 1.0f32;
+    let new_max = 10.0f32;
+    let new_min = 1.0f32;
+    score.count += 1;
+    score.last_delta = score.cur_delta;
+    score.cur_delta = total_desc;
+    let t1 = score.cur_delta - score.last_delta;
+    let diff = if t1 < min {
+        min
+    }else if t1 > max{
+        max
+    }else{
+        t1
+    };
+
+    score.score += 1.0 / (new_min + (diff - min) * (new_max - new_min) / (max - min)) * 10.0;
 }
 
 //更新游戏等级展示

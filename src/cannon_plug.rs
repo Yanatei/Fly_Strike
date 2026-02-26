@@ -2,9 +2,11 @@ use std::time::Duration;
 
 use bevy::asset::transformer;
 //炮台
-use bevy::{prelude::*, time};
-use crate::config::*;
+use bevy::{log, prelude::*, time};
+use leafwing_input_manager::prelude::ActionState;
+use crate::{config::*, player_plug};
 use crate::event::*;
+use crate::player_plug::{Player, PlayerAction};
 
 
 #[derive(Component, Resource)]
@@ -39,7 +41,7 @@ pub struct CannonPlugin;
 impl Plugin for CannonPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
-        app.add_systems(Update, (cannon_move_system, execute_cannon_animations)
+        app.add_systems(Update, (cannon_move_system_player,execute_cannon_animations)
             .run_if(not(in_state(GameState::Paused).or(in_state(GameState::Leaderboard)).or(not(in_state(MenuState::None)))))
         );
         app.add_observer(on_cannon_re_location_event);
@@ -75,32 +77,35 @@ fn setup(mut commands: Commands,
     ));
 }
 
-fn cannon_move_system(
+pub fn cannon_move_system_player(
     time: Res<Time>,
-    input: Res<ButtonInput<KeyCode>>,
     mut bullet_timer: ResMut<BulletTimer>,
-    mut query: Query<(Entity, &mut Transform, &mut Cannon)>,
+    mut cannot_query: Query<(Entity, &mut Transform, &mut Cannon)>,
+    player_query: Query<&ActionState<PlayerAction>, With<Player>>,
     mut commands: Commands,
     game_config: Res<GameConfig>,
 ){
     bullet_timer.0.tick(time.delta());
 
-    let (_, mut cannon_transform, _) = query.single_mut().unwrap();
+    let (_, mut cannon_transform, _) = cannot_query.single_mut().unwrap();
+    if player_query.single().is_err() {
+        log::info!("cannon_move_system_player player_query is empty!!!");
+        return;
+    }
 
-    if input.just_pressed(KeyCode::Space)  {
+    let player = player_query.single().unwrap();
+    if player.pressed(&PlayerAction::Fire)  {
         if bullet_timer.0.is_finished() {//子弹发射间隔
             commands.trigger(FireEvent(cannon_transform.translation));
             bullet_timer.0.reset();
         }
     }
 
-    let mut keys = [KeyCode::ArrowLeft, KeyCode::KeyA];
-    if keys.iter().any(|&key| input.pressed(key)) {
+    if player.pressed(&PlayerAction::MoveLeft) {
         cannon_transform.translation.x -= CANNON_SPEED * time.delta_secs();
     }
 
-    keys = [KeyCode::ArrowRight, KeyCode::KeyD];
-    if keys.iter().any(|&key| input.pressed(key)) {
+    if player.pressed(&PlayerAction::MoveRight) {
         cannon_transform.translation.x += CANNON_SPEED * time.delta_secs();
     }
 
@@ -110,9 +115,9 @@ fn cannon_move_system(
 fn execute_cannon_animations(
     time: Res<Time>,
     mut query: Query<(&mut AnimationConfig, &mut Sprite)>,
-    input: Res<ButtonInput<KeyCode>>,
+    player_query: Single<&ActionState<PlayerAction>, With<Player>>,
 ) {
-    if !input.pressed(KeyCode::ArrowLeft) && !input.pressed(KeyCode::ArrowRight) {
+    if !(player_query.pressed(&PlayerAction::MoveLeft) || player_query.pressed(&PlayerAction::MoveRight)) {
         return;
     }
     for (mut animation_config, mut sprite) in query.iter_mut() {
