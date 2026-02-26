@@ -18,22 +18,13 @@ pub struct GameStatePlug;
 #[derive(Resource)]
 struct BeforeInGameTimer(Timer);
 
-//游戏中，不需要额外计时器
-
-// //过场动画计时 before
-// #[derive(Resource)]
-// struct BeforeCutsceneTimer(Timer);
-//过场动画计时
-// #[derive(Resource)]
-// struct InCutsceneTimer(Timer);
-// //过场动画计时 after
-// #[derive(Resource)]
-// struct AfterCutsceneTimer(Timer);
-//加载下一关，不需要额外计时器
-
 //游戏结束动画计时器
 #[derive(Resource)]
 struct OverCutsceneTimer(Timer);
+
+//展示得分板时器
+#[derive(Resource)]
+struct LeaderBoardTimer(Timer);
 
 impl Plugin for GameStatePlug {
     fn build(&self, app: &mut App) {
@@ -59,6 +50,8 @@ impl Plugin for GameStatePlug {
         app.add_systems(OnEnter(GameState::Leaderboard), on_leaderboard);
         //游戏结束
         app.add_systems(OnEnter(GameState::GameOver), on_game_over);
+        //游戏退出
+        app.add_systems(OnEnter(GameState::Exit), on_game_exit);
 
         //游戏中状态，实时逻辑处理
         //展示游戏时长，检测关卡结束
@@ -69,6 +62,10 @@ impl Plugin for GameStatePlug {
         app.add_systems(Update, game_over_system
             .run_if(in_state(GameState::GameOver))
         );
+        //Leaderboard状态，展示9秒，然后进入下一状态
+        app.add_systems(Update, in_leaderboard_system
+            .run_if(in_state(GameState::Leaderboard))
+        );
         //注册游戏状态切换观察者
         app.add_observer(on_auto_next_game_state_event);
     }
@@ -78,6 +75,7 @@ fn setup_system(
     mut commands: Commands,
 ) {
     commands.insert_resource(OverCutsceneTimer(Timer::new(OVER_CUTSCENE_DURATION, TimerMode::Once)));
+    commands.insert_resource(LeaderBoardTimer(Timer::new(LEADERBOARD_DURATION, TimerMode::Once)));
 }
 
 fn on_before_in_game(
@@ -132,11 +130,38 @@ fn in_game_system(
 }
 
 //OnEnter排行榜
+//展示得分和总用时
 fn on_leaderboard(
     mut commands: Commands,
-    game_started_sound: Res<GameStartedSound>,
+    score: ResMut<Score>,
+    mut game_config: ResMut<GameConfig>,
+    global_font: Res<GlobalFont>,
+    mut leaderboard_timer: ResMut<LeaderBoardTimer>
 ) {
-    
+    let totol_time = game_config.elapsed_time.iter().sum::<f32>();
+    let str = format!("得分:{:.2}\n用时:{:.2}s", score.score, totol_time);
+    commands.spawn((
+        Text2d::new(str),
+        TextFont {
+            font: global_font.0.clone(),
+            font_size: 60.0,
+            ..default()
+        },
+        TextColor(Color::WHITE),
+        Transform::from_xyz(0.0, 0.0, 0.0),
+    ));
+    leaderboard_timer.0.reset();
+}
+
+fn in_leaderboard_system(
+    mut commands: Commands,
+    mut leaderboard_timer: ResMut<LeaderBoardTimer>,
+    time: Res<Time>,
+){
+    leaderboard_timer.0.tick(time.delta());
+    if leaderboard_timer.0.is_finished() {
+        commands.trigger(AutoNextGameStateEvent);
+    }
 }
 
 //驱动游戏状态按顺序变化
@@ -228,6 +253,12 @@ fn game_over_system(
     if over_cutscene_timer.0.is_finished() && game_config.fireworks_count >= 6 {
         commands.trigger(AutoNextGameStateEvent);
     }
+}
+
+fn on_game_exit(
+    mut message_writer: MessageWriter<AppExit>,
+){
+    message_writer.write(AppExit::Success);
 }
 
 //加载下一关：

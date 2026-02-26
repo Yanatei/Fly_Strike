@@ -55,6 +55,7 @@ pub enum GameState {
     Paused, // 暂停
     Leaderboard,//排行榜
     GameOver, // 游戏结束
+    Exit, //游戏退出
 }
 
 //抽象定义不同平台的窗口
@@ -120,7 +121,7 @@ impl Default for GameStateDef {
             game_states: [
                 vec![GameState::BeforeInGame, GameState::InGame, GameState::InCutscene],
                 vec![GameState::BeforeInGame, GameState::InGame, GameState::InCutscene],
-                vec![GameState::BeforeInGame, GameState::InGame, GameState::GameOver, GameState::Leaderboard],
+                vec![GameState::BeforeInGame, GameState::InGame, GameState::GameOver, GameState::Leaderboard, GameState::Exit],
             ],
         }
     }
@@ -223,6 +224,7 @@ pub const BEFORE_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::f
 pub const IN_CUSTSCENE_DURATION: std::time::Duration = std::time::Duration::from_secs(4);
 pub const AFTER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(500);
 pub const OVER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(200);//游戏结束时激发动画的时长
+pub const LEADERBOARD_DURATION:std::time::Duration = std::time::Duration::from_millis(9000);//最后展示计分板的时长
 
 pub const ABOUT_STR: &str ="
 Fly_Strike
