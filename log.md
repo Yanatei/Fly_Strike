@@ -34,3 +34,14 @@ cargo run --bin fly_strike
 把bevy里的项目复制过来，在些基础上再修改
 主要是改了：1、项目文件名从大写改为小写,再重新生成
 修复日志打印：从手机拨号键盘密码打开工程设置界面，打开日志开关
+
+# 生成动图
+## 从纯黑背景视频导出png,
+ffmpeg -i 单个烟花.mp4 -vf "fps=30,scale=240:384" frame/frame_%04d.png
+ffmpeg -i 三重烟花.mp4 -vf "fps=30,scale=240:384" frame_last/frame_%04d.png
+
+# 合成 SpriteSheet
+cd frame
+magick montage frame_*.png -tile 11x10 -geometry +0+0 fireworks_sheet.png
+cd frame_last
+magick montage frame_*.png -tile 11x10 -geometry +0+0 fireworks_last_sheet.png

@@ -11,6 +11,7 @@ use crate::score_plug::GameLevelSpanType;
 use crate::{boids_plug::Boid, config::*, score_plug::DurationSpanType};
 use crate::event::*;
 use crate::cutscene_plug::*;
+use crate::cutscene_mobile_plug::*;
 
 pub struct GameStatePlug;
 
@@ -29,8 +30,13 @@ struct LeaderBoardTimer(Timer);
 impl Plugin for GameStatePlug {
     fn build(&self, app: &mut App) {
         app.init_state::<GameState>();
-        app.add_plugins(HanabiPlugin);//粒子系统插件
-        app.add_plugins(CutScenePlugin);//过场动画插件
+        if cfg!(any(target_os="windows", target_os="linux", target_os="macos")){
+            app.add_plugins(HanabiPlugin);//粒子系统插件
+            app.add_plugins(CutScenePlugin);//过场动画插件
+        }else if cfg!(any(target_os="android", target_os="ios")){
+            app.add_plugins(CutSceneMobilePlugin);//粒子系统插件
+        }
+        
         //游戏关卡数据
         app.insert_resource(BeforeInGameTimer(Timer::new(BEFORE_IN_GAME_DURATION, TimerMode::Once)));
         app.insert_resource(GameStateDef::default());
@@ -249,7 +255,7 @@ fn game_over_system(
         over_cutscene_timer.0.reset();
     }
 
-    //动画效果技术，切换到下一状态
+    //动画效果结束，切换到下一状态
     if over_cutscene_timer.0.is_finished() && game_config.fireworks_count >= 6 {
         commands.trigger(AutoNextGameStateEvent);
     }

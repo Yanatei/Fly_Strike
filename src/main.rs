@@ -12,7 +12,6 @@ use crate::score_plug::*;
 use crate::fps_plug::*;
 use crate::game_state_plug::*;
 use crate::menu_plug::*;
-use crate::cutscene_plug::*;
 use crate::player_plug::*;
 
 mod boids_plug;
@@ -25,7 +24,10 @@ mod fps_plug;
 mod game_state_plug;
 mod menu_plug;
 mod cutscene_plug;
+mod cutscene_mobile_plug;
+mod custscene_public;
 mod player_plug;
+
 
 #[bevy_main]
 fn main() {
