@@ -12,27 +12,6 @@ use crate::player_plug::{Player, PlayerAction};
 #[derive(Component, Resource)]
 pub struct Cannon;
 
-#[derive(Component)]
-struct AnimationConfig {
-    first_index: usize,
-    last_index: usize,
-    fps: u8,
-    frame_timer: Timer,
-}
-impl AnimationConfig {
-    fn new(first: usize, last: usize, fps: u8) -> Self {
-        Self {
-            first_index: first,
-            last_index: last,
-            fps,
-            frame_timer: Self::timer_from_fps(fps),
-        }
-    }
-
-    fn timer_from_fps(fps: u8) -> Timer {
-        Timer::new(Duration::from_secs_f32(1.0 / (fps as f32)), TimerMode::Once)
-    }
-}
 pub struct CannonPlugin;
 
 // #[derive(Resource)]

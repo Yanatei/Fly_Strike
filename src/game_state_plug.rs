@@ -7,6 +7,7 @@ use bevy::state::commands;
 use bevy::ui::update;
 use bevy::{ecs::system::command, log::Level, prelude::*};
 use bevy_hanabi::prelude::*;
+use crate::custscene_public::CutSceneTimers;
 use crate::score_plug::GameLevelSpanType;
 use crate::{boids_plug::Boid, config::*, score_plug::DurationSpanType};
 use crate::event::*;
@@ -18,7 +19,6 @@ pub struct GameStatePlug;
 //准备开始游戏计时
 #[derive(Resource)]
 struct BeforeInGameTimer(Timer);
-
 //游戏结束动画计时器
 #[derive(Resource)]
 struct OverCutsceneTimer(Timer);
@@ -34,9 +34,9 @@ impl Plugin for GameStatePlug {
             app.add_plugins(HanabiPlugin);//粒子系统插件
             app.add_plugins(CutScenePlugin);//过场动画插件
         }else if cfg!(any(target_os="android", target_os="ios")){
-            app.add_plugins(CutSceneMobilePlugin);//粒子系统插件
+            app.add_plugins(CutSceneMobilePlugin);//Sprite Sheet动画
         }
-        
+        //app.add_plugins(CutSceneMobilePlugin);//Sprite Sheet动画
         //游戏关卡数据
         app.insert_resource(BeforeInGameTimer(Timer::new(BEFORE_IN_GAME_DURATION, TimerMode::Once)));
         app.insert_resource(GameStateDef::default());
@@ -205,14 +205,18 @@ fn on_auto_next_game_state_event(
 
 fn on_in_cutscene(
     mut cutscene_state: ResMut<NextState<CutsceneStepState>>,
+    mut cutscene_timers: ResMut<CutSceneTimers>,
 ) {
     //设置关卡动画的首个状态
+    //更新CutSceneTimers当前状态
+    cutscene_timers.cur_state = CutsceneStepState::BeforeCutscene;
     cutscene_state.set(CutsceneStepState::BeforeCutscene);
 }
 
 fn on_game_over(
+    mut cutscene_state: ResMut<NextState<CutsceneStepState>>,
+    mut cutscene_timers: ResMut<CutSceneTimers>,
     duration_span: Single<&mut TextSpan, With<DurationSpanType>>,
-    mut over_cutscene_timer: ResMut<OverCutsceneTimer>,
     mut game_config: ResMut<GameConfig>
 ) {
     let elapsed = game_config.elapsed_time[game_config.game_level];
@@ -223,40 +227,19 @@ fn on_game_over(
     let sum_elapsed: f32 = game_config.elapsed_time.iter().sum();
     print!("Game Over! Elapsed time: {:.2} seconds\n", format!("{:.2}", sum_elapsed));
 
-    //初始化计时器
-    over_cutscene_timer.0.reset();
-    //重置烟花计数器
-    game_config.fireworks_count = 0;
+    cutscene_timers.cur_state = CutsceneStepState::BeforeCutscene;
+    cutscene_state.set(CutsceneStepState::BeforeCutscene);
 }
 
 fn game_over_system(
     time: Res<Time>,
     mut commands: Commands,
     mut over_cutscene_timer: ResMut<OverCutsceneTimer>,
-    mut q_spawner: Query<&mut EffectSpawner>,
-    fireworks_sound: Res<FireworksSound>,
-    mut game_config: ResMut<GameConfig>
 ) {
     //目前为空
     over_cutscene_timer.0.tick(time.delta());
-
-    if over_cutscene_timer.0.is_finished() && game_config.fireworks_count < 6 {
-        let mut index = 0;
-        for (mut spawner) in q_spawner.iter_mut() {
-            spawner.reset();
-            spawner.active = true;
-
-            if index < 1 && game_config.fireworks_count % 2 == 0 {
-                commands.spawn((AudioPlayer(fireworks_sound.0.clone()), PlaybackSettings::DESPAWN));
-            }
-            index += 1;
-        }
-        game_config.fireworks_count += 1;
-        over_cutscene_timer.0.reset();
-    }
-
     //动画效果结束，切换到下一状态
-    if over_cutscene_timer.0.is_finished() && game_config.fireworks_count >= 6 {
+    if over_cutscene_timer.0.is_finished(){
         commands.trigger(AutoNextGameStateEvent);
     }
 }

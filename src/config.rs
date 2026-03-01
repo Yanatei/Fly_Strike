@@ -1,11 +1,8 @@
 //use bevy::color::Color;
 
-use std::default;
+use std::{default, time::Duration};
 
-use bevy::{asset::Handle, audio::AudioSource, color::Color, 
-    ecs::{component::Component, resource::Resource}, 
-    image::Image, log, state::state::States, text::Font,
-    time::Timer, ui::Val, window::*};
+use bevy::{asset::Handle, audio::AudioSource, color::Color, ecs::{component::Component, resource::Resource}, image::Image, log, math::UVec2, state::state::States, text::Font, time::{Timer, TimerMode}, ui::Val, window::*};
 
 //game config
 #[derive(Resource)]
@@ -62,6 +59,29 @@ pub enum GameState {
 pub trait WindowsConfig {
     fn apply_to(&self, window: &mut Window);
     fn log(&self);
+}
+
+//SpriteSheet 动画通用结构
+#[derive(Component)]
+pub struct AnimationConfig {
+    pub first_index: usize,
+    pub last_index: usize,
+    pub fps: u8,
+    pub frame_timer: Timer,
+}
+impl AnimationConfig {
+    pub fn new(first: usize, last: usize, fps: u8) -> Self {
+        Self {
+            first_index: first,
+            last_index: last,
+            fps,
+            frame_timer: Self::timer_from_fps(fps),
+        }
+    }
+
+    pub fn timer_from_fps(fps: u8) -> Timer {
+        Timer::new(Duration::from_secs_f32(1.0 / (fps as f32)), TimerMode::Once)
+    }
 }
 
 //桌面平台
@@ -128,13 +148,14 @@ impl Default for GameStateDef {
 }
 
 //过场动画步骤
-#[derive(Debug, Clone, Copy,Eq, PartialEq, Hash, States, Default)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, States, Default)]
 pub enum CutsceneStepState {
     #[default]
     None,
     BeforeCutscene, // 准备过场动画阶段
     InCutscene, // 过场动画中
     AfterCutscene, // 过场动画结束阶段
+    InGameOverCutscene, //最后结束时的动画阶段
 }
 
 // 主菜单插件，展示和控制主菜单界面逻辑，1：设置声音大小，2：About界面，3:返回游戏
@@ -171,6 +192,11 @@ pub const CANNON_PARAMETER: (usize, usize, u8) = (0, 2, 9); //第一帧、最后
 pub const BULLET_TIME_DURATION: std::time::Duration = std::time::Duration::from_millis(1000); //子弹发射间隔时间t
 pub const CANNON_SPEED: f32 = 300.0;
 
+//烟花
+pub const FIREWORKS_SIZE: f32 = 1.; //缩放因子
+pub const FIREWORKS_IMAGE_SIZE: bevy::prelude::UVec2 = UVec2::new(240,384); //烟花小图片的长宽
+pub const FIREWORKS_PARAMETER: (usize, usize, u8) = (0, 109, 30);//第一帧、最后一帧、频率
+pub const FIREWORKS_LAST_PARAMETER: (usize, usize, u8) = (0, 110, 30);//第一帧、最后一帧、频率
 //子弹
 pub const BULLET_SIZE: f32 = 2.0;
 pub const BULLET_SPEED: f32 = 900.0;
@@ -223,7 +249,8 @@ pub const BEFORE_IN_GAME_DURATION: std::time::Duration = std::time::Duration::fr
 pub const BEFORE_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(1500);
 pub const IN_CUSTSCENE_DURATION: std::time::Duration = std::time::Duration::from_secs(4);
 pub const AFTER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(500);
-pub const OVER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_millis(200);//游戏结束时激发动画的时长
+pub const OVER_CUTSCENE_DURATION: std::time::Duration = std::time::Duration::from_secs(4);//游戏结束时激发动画的时长
+pub const OVER_CUTSCENE_DURATION_LIMIT: std::time::Duration = std::time::Duration::from_millis(200);//游戏结束时激发动画的时长
 pub const LEADERBOARD_DURATION:std::time::Duration = std::time::Duration::from_millis(9000);//最后展示计分板的时长
 
 pub const ABOUT_STR: &str ="

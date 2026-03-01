@@ -36,8 +36,11 @@ cargo run --bin fly_strike
 修复日志打印：从手机拨号键盘密码打开工程设置界面，打开日志开关
 
 # 生成动图
-## 从纯黑背景视频导出png,
+## 从纯黑背景视频导出png, 
 ffmpeg -i 单个烟花.mp4 -vf "fps=30,scale=240:384" frame/frame_%04d.png
+//抠透明图--(有问题)
+ffmpeg -i 单个烟花.mp4 -vf "fps=30,scale=240:384,format=rgba,colorkey=0x000000:0.03:0.02" frame/frame_%04d.png
+
 ffmpeg -i 三重烟花.mp4 -vf "fps=30,scale=240:384" frame_last/frame_%04d.png
 
 # 合成 SpriteSheet
@@ -45,3 +48,4 @@ cd frame
 magick montage frame_*.png -tile 11x10 -geometry +0+0 fireworks_sheet.png
 cd frame_last
 magick montage frame_*.png -tile 11x10 -geometry +0+0 fireworks_last_sheet.png
+
