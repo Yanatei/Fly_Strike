@@ -229,7 +229,7 @@ pub fn boid_system(
         transform.translation.x =
             transform.translation.x.clamp(-config.limit_x, config.limit_x);
         transform.translation.y =
-            transform.translation.y.clamp(-config.limit_y, config.limit_y);
+            transform.translation.y.clamp(-(config.limit_y - CANNON_HEIGHT), config.limit_y);
 
         // === 8️⃣ 朝向飞行方向 ===
         if boid.velocity.length_squared() > 0.001 {

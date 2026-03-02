@@ -20,8 +20,8 @@ pub struct GameStatePlug;
 #[derive(Resource)]
 struct BeforeInGameTimer(Timer);
 //游戏结束动画计时器
-#[derive(Resource)]
-struct OverCutsceneTimer(Timer);
+// #[derive(Resource)]
+// struct OverCutsceneTimer(Timer);
 
 //展示得分板时器
 #[derive(Resource)]
@@ -65,9 +65,9 @@ impl Plugin for GameStatePlug {
             .run_if(in_state(GameState::InGame).and(in_state(MenuState::None)))
         );
         //GameOver状态，多个烟火逻辑
-        app.add_systems(Update, game_over_system
-            .run_if(in_state(GameState::GameOver))
-        );
+        // app.add_systems(Update, game_over_system
+        //     .run_if(in_state(GameState::GameOver))
+        // );
         //Leaderboard状态，展示9秒，然后进入下一状态
         app.add_systems(Update, in_leaderboard_system
             .run_if(in_state(GameState::Leaderboard))
@@ -80,7 +80,7 @@ impl Plugin for GameStatePlug {
 fn setup_system(
     mut commands: Commands,
 ) {
-    commands.insert_resource(OverCutsceneTimer(Timer::new(OVER_CUTSCENE_DURATION, TimerMode::Once)));
+    //commands.insert_resource(OverCutsceneTimer(Timer::new(OVER_CUTSCENE_DURATION, TimerMode::Once)));
     commands.insert_resource(LeaderBoardTimer(Timer::new(LEADERBOARD_DURATION, TimerMode::Once)));
 }
 
@@ -214,9 +214,8 @@ fn on_in_cutscene(
 }
 
 fn on_game_over(
-    mut cutscene_state: ResMut<NextState<CutsceneStepState>>,
-    mut cutscene_timers: ResMut<CutSceneTimers>,
     duration_span: Single<&mut TextSpan, With<DurationSpanType>>,
+    // mut over_cutscene_timer: ResMut<OverCutsceneTimer>,
     mut game_config: ResMut<GameConfig>
 ) {
     let elapsed = game_config.elapsed_time[game_config.game_level];
@@ -227,21 +226,20 @@ fn on_game_over(
     let sum_elapsed: f32 = game_config.elapsed_time.iter().sum();
     print!("Game Over! Elapsed time: {:.2} seconds\n", format!("{:.2}", sum_elapsed));
 
-    cutscene_timers.cur_state = CutsceneStepState::BeforeCutscene;
-    cutscene_state.set(CutsceneStepState::BeforeCutscene);
+    //over_cutscene_timer.0.reset();
 }
 
 fn game_over_system(
     time: Res<Time>,
     mut commands: Commands,
-    mut over_cutscene_timer: ResMut<OverCutsceneTimer>,
+    //mut over_cutscene_timer: ResMut<OverCutsceneTimer>,
 ) {
-    //目前为空
-    over_cutscene_timer.0.tick(time.delta());
-    //动画效果结束，切换到下一状态
-    if over_cutscene_timer.0.is_finished(){
-        commands.trigger(AutoNextGameStateEvent);
-    }
+    // //目前为空
+    // over_cutscene_timer.0.tick(time.delta());
+    // //动画效果结束，切换到下一状态
+    // if over_cutscene_timer.0.is_finished(){
+    //     commands.trigger(AutoNextGameStateEvent);
+    // }
 }
 
 fn on_game_exit(

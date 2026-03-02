@@ -7,7 +7,8 @@ use crate::custscene_public::*;
 
 const ACCEL_VALUE: f32 = -54.0; //重力加速度
 const DRAG_VALUE: f32 = 4.; //线性阻力系数
-
+#[derive(Resource)]
+pub struct OverCutsceneDurationLimitTimer(Timer);//结束烟花多重爆炸控制
 pub struct CutScenePlugin;
 
 impl Plugin for CutScenePlugin {
@@ -17,14 +18,16 @@ impl Plugin for CutScenePlugin {
         app.insert_resource(CutSceneTimers::default());
         app.insert_resource(CutSceneStateDef::default());//关卡过关动画状态定义
         app.insert_resource(CutSceneGameOverStateDef::default());//游戏结束时状态定义
+        app.insert_resource(OverCutsceneDurationLimitTimer(Timer::new(OVER_CUTSCENE_DURATION_LIMIT, TimerMode::Once)));
         app.add_systems(Startup, setup_system);
 
         app.add_systems(OnEnter(CutsceneStepState::BeforeCutscene), on_before_cutscene);
         app.add_systems(OnEnter(CutsceneStepState::InCutscene), on_in_cutscene);
         app.add_systems(OnEnter(CutsceneStepState::AfterCutscene), on_after_cutscene);
+        app.add_systems(OnEnter(CutsceneStepState::InGameOverCutscene), on_in_gameover_cutscene);
         //注册到游戏状态上，更新动画的状态
         app.add_systems(Update, cutscene_state_system
-            .run_if(in_state(GameState::InCutscene))
+            .run_if(in_state(GameState::InCutscene)).run_if(not(in_state(CutsceneStepState::None)))
         );
 
         //退出最后一个烟花状态时，触发修改游戏状态
@@ -33,7 +36,7 @@ impl Plugin for CutScenePlugin {
         //GameOver时，烟花状态控制
         app.add_systems(OnEnter(GameState::GameOver), on_game_over_state);
         app.add_systems(Update, game_over_state_system
-            .run_if(in_state(GameState::GameOver))
+            .run_if(in_state(GameState::GameOver)).run_if(not(in_state(CutsceneStepState::None)))
         );
         //注册到游戏结束状态上，更新结束动画的状态
         app.add_systems(Update, cutscene_gameover_state_system
@@ -43,17 +46,32 @@ impl Plugin for CutScenePlugin {
 }
 
 fn on_game_over_state(
+    mut cutscene_state: ResMut<NextState<CutsceneStepState>>,
     mut cutscene_timer: ResMut<CutSceneTimers>,
     mut game_config: ResMut<GameConfig>,
+    mut limit_timer: ResMut<OverCutsceneDurationLimitTimer>,
 ){
+    //设置当前首个状态
+    cutscene_timer.cur_state = CutsceneStepState::BeforeCutscene;
+    cutscene_state.set(CutsceneStepState::BeforeCutscene);
+
     //初始化计时器
     if let Some(t_timer) = cutscene_timer.get_cur_timer() {
         t_timer.reset();
     }
+    limit_timer.0.reset();
     //重置烟花计数器
     game_config.fireworks_count = 0;
-    //设置当前首个状态
-    // cutscene_timer.cur_state = CutsceneStepState::InGameOverCutscene;
+}
+
+fn on_in_gameover_cutscene(
+    mut cutscene_timers: ResMut<CutSceneTimers>,
+){
+    let Some(cur_timer) = cutscene_timers.get_cur_timer() else {
+        log::info!("on_in_gameover_cutscene cutscene_timer is empty!!");
+        return;
+    };
+    cur_timer.reset();
 }
 
 fn setup_system(
@@ -68,45 +86,43 @@ fn setup_system(
 fn cutscene_gameover_state_system(
     time: Res<Time>,
     mut commands: Commands,
-    mut cutscene_timer: ResMut<CutSceneTimers>,
     mut q_spawner: Query<&mut EffectSpawner>,
     fireworks_sound: Res<FireworksSound>,
-    mut game_config: ResMut<GameConfig>
+    mut game_config: ResMut<GameConfig>,
+    mut limit_timer: ResMut<OverCutsceneDurationLimitTimer>,
 ) {
     //目前为空
     //初始化计时器
-    let Some(t_timer) = cutscene_timer.get_cur_timer() else {
-        log::info!("game_over_state_system cutscene_timer is empty!!");
-        return;
-    };
-    t_timer.tick(time.delta());
+    let delta = time.delta();
+    limit_timer.0.tick(delta);
 
-    if t_timer.is_finished() && game_config.fireworks_count < 6 {
+    if limit_timer.0.is_finished() && game_config.fireworks_count < 6 {
         let mut index = 0;
         for (mut spawner) in q_spawner.iter_mut() {
             spawner.reset();
             spawner.active = true;
-
+            //log::info!("AudioPlayer fireworks_sound index={}, fireworks_count={}",index,game_config.fireworks_count);
             if index < 1 && game_config.fireworks_count % 2 == 0 {
                 commands.spawn((AudioPlayer(fireworks_sound.0.clone()), PlaybackSettings::DESPAWN));
             }
             index += 1;
         }
         game_config.fireworks_count += 1;
-        t_timer.reset();
+        limit_timer.0.reset();
     }
 }
 
 fn cutscene_state_system(
     mut cutscene_timers: ResMut<CutSceneTimers>,
     mut next_state: ResMut<NextState<CutsceneStepState>>,
+    cur_state: ResMut<State<CutsceneStepState>>,
     mut cutscene_def: ResMut<CutSceneStateDef>,
     time: Res<Time>,
 ){
     let t_times = cutscene_timers.get_cur_timer();
     let delta = time.delta();
     let Some(times) = t_times else {
-        log::info!("cutscene_state_system cutscene_timers is empty!!, cur_state={:?}", cutscene_timers.cur_state);
+        log::info!("cutscene_state_system cutscene_timers is empty!!, cur_state={:?}, cur_state={:?}", cutscene_timers.cur_state, cur_state);
         return;
     };
     times.tick(delta);
@@ -153,9 +169,10 @@ fn game_over_state_system(
             next_index = index + 1;
             next_status = cutscene_gameover_def.state[next_index];
         }
-        next_state.set(next_status);
         cutscene_gameover_def.cur_index = next_index;
         cutscene_timers.cur_state = next_status;
+        next_state.set(next_status);
+        log::info!("change CutsceneStepState state={:?}\n",next_status);
     }
 }
 
@@ -176,6 +193,7 @@ fn reset_cutscene_timer(cutscene_timers: &mut CutSceneTimers){
 
 fn on_before_cutscene(
     mut cutscene_timers: ResMut<CutSceneTimers>,
+    mut next_state: ResMut<NextState<CutsceneStepState>>,
 ) {
     //初始化计时器
     reset_cutscene_timer(&mut cutscene_timers);

@@ -20,9 +20,11 @@ pub struct CannonPlugin;
 impl Plugin for CannonPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
+
         app.add_systems(Update, (cannon_move_system_player,execute_cannon_animations)
             .run_if(not(in_state(GameState::Paused).or(in_state(GameState::Leaderboard)).or(not(in_state(MenuState::None)))))
         );
+        
         app.add_observer(on_cannon_re_location_event);
     }
 }

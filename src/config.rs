@@ -180,7 +180,7 @@ pub enum MenuAction{
 //飞行物体
 #[derive(Resource)]
 pub struct BoidsImage(pub Handle<Image>);
-pub const FLY_COUNT: usize = 3;
+pub const FLY_COUNT: usize = 30;
 pub const FLY_SIZE: f32 = 0.2;
 pub const BOID_SPEED_INCREMENT: f32 = 50.0;
 

@@ -68,21 +68,22 @@ fn mobile_touch_input_system(
     action_state.release(&PlayerAction::Fire);
 
     for touch in touches.iter() {
-        let position = touch.position();
+        // let position = touch.position();
 
-        let screen_width = game_config.window_width;
+        // let screen_width = game_config.window_width;
 
-        if position.x < screen_width / 2.0 {
-            // 左半屏控制移动
-            if position.x < screen_width / 4.0 {
-                action_state.press(&PlayerAction::MoveLeft);
-            } else {
-                action_state.press(&PlayerAction::MoveRight);
-            }
-        } else {
-            // 右半屏开火
-            action_state.press(&PlayerAction::Fire);
-        }
-
+        // if position.x < screen_width / 2.0 {
+        //     // 左半屏控制移动
+        //     if position.x < screen_width / 4.0 {
+        //         action_state.press(&PlayerAction::MoveLeft);
+        //     } else {
+        //         action_state.press(&PlayerAction::MoveRight);
+        //     }
+        // } else {
+        //     // 右半屏开火
+        //     action_state.press(&PlayerAction::Fire);
+        // }
+        //手机端只开火，不移动炮台
+        action_state.press(&PlayerAction::Fire);
     }
 }

@@ -33,6 +33,7 @@ mod player_plug;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .insert_resource(ClearColor(Color::BLACK))//背景颜色
         .add_plugins(GameStatePlug)
         .add_plugins(MenuPlug)
         .add_plugins(CannonPlugin)

@@ -17,7 +17,7 @@ impl Default for CutSceneTimers {
         timers.insert(CutsceneStepState::BeforeCutscene, Timer::new(BEFORE_CUTSCENE_DURATION, TimerMode::Once));
         timers.insert(CutsceneStepState::InCutscene, Timer::new(IN_CUSTSCENE_DURATION, TimerMode::Once));
         timers.insert(CutsceneStepState::AfterCutscene, Timer::new(AFTER_CUTSCENE_DURATION, TimerMode::Once));
-        timers.insert(CutsceneStepState::InGameOverCutscene, Timer::new(OVER_CUTSCENE_DURATION_LIMIT, TimerMode::Once));
+        timers.insert(CutsceneStepState::InGameOverCutscene, Timer::new(OVER_CUTSCENE_DURATION, TimerMode::Once));
 
         Self {
             timers: timers,
